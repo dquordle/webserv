@@ -15,10 +15,10 @@ private:
     std::string response_;
     std::string statusLine_;
     std::string body_;
-    int statusCode_;
+//    int Code_;
 
 public:
-    Response(int responseType, const s_startline &startline, const s_headers &headers, const s_bodies &bodies);
+    Response(int statusCode_, const s_startline &startline, const s_headers &headers, const s_bodies &bodies);
 
 const std::string &getResponse() const;
 

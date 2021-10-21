@@ -69,11 +69,11 @@ void Server::doRead(int &socket) {
 //    {
 //        std::cout << receivedString << std::endl;
 //        Request req(receivedString);
-////        if (req.getResponseType() == 200)
+////        if (req.getstatusCode_() == 200)
 ////        {
 ////
 ////        }
-//        Response resp(req.getResponseType(), req.getStartLine(), req.getHeaders(), req.getBodies());
+//        Response resp(req.getstatusCode_(), req.getStartLine(), req.getHeaders(), req.getBodies());
 //        doWrite(socket, resp.getResponse());
 //    }
 
@@ -94,7 +94,7 @@ void Server::doRead(int &socket) {
         const std::string buffer  = std::string(buf);
 //        std::cout << buffer;
         Request req(buffer);
-        Response resp(req.getResponseType(), req.getStartLine(), req.getHeaders(), req.getBodies());
+        Response resp(req.getstatusCode_(), req.getStartLine(), req.getHeaders(), req.getBodies());
 
 		doWrite(socket, resp.getResponse());
 	}
