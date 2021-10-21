@@ -5,10 +5,12 @@
 #include <fstream>
 #include <iostream>
 
+const std::string DEFAULT_CONFIG_PATH = "../g_doggy.conf";
+
 class Parser
 {
 public:
-	static std::vector<Host> parse(char* config);
+	static std::vector<Host> parse(const std::string& config);
 
 private:
 	static std::string superGetNextLine(std::ifstream & ifs);

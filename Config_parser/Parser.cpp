@@ -1,6 +1,6 @@
 #include "Parser.hpp"
 
-std::vector<Host> Parser::parse(char *config)
+std::vector<Host> Parser::parse(const std::string& config)
 {
 	std::ifstream ifs(config);
 	std::vector<Host> hosts;
@@ -19,6 +19,8 @@ std::vector<Host> Parser::parse(char *config)
 			nextLine = superGetNextLine(ifs);
 	}
 	ifs.close();
+	if (hosts.empty())
+		exit(1);
 	return hosts;
 }
 
