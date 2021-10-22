@@ -3,7 +3,7 @@
 
 #include <unistd.h>
 #include "UtilsServer/StructManager.hpp"
-#include "UtilsServer/SelectHelper.hpp"
+#include "UtilsServer/PollStruct.hpp"
 #include "../Debug.class/Debug.hpp"
 #include "ServerException/ServerException.hpp"
 #include "../IHTTPMessage.interface/Request.class/Request.hpp"
@@ -13,9 +13,14 @@
 class Server {
 private:
 	StructManager		structManager;
-	SelectHelper		selectHelper;
+	PollStruct		    PollStruct;
 	int					error_;
 	int 				socket_;
+	int					flagsOn_;
+	int                 timeout_;
+	int                 server_run;
+	int                 compress;
+	std::string         buffer;
 public:
 	typedef StructManager::connection_struct	connection_struct;
 	typedef ServerException						ServerException;
@@ -29,7 +34,7 @@ private:
 
 	void doAccept();
 
-	void doRead(int &);
+	int doRead(int &);
 
 	void doWrite (int &, const std::string &);
 
@@ -39,7 +44,10 @@ private:
 
 	void socketInit(const Server::connection_struct &connectionStruct);
 
-//	int sendAll(int & socket,  const std::string & buf, int bufLength);
+	void socketReusable();
+
+	void handleConnection(int &);
+
 };
 
 #endif

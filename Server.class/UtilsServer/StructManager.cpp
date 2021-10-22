@@ -11,7 +11,7 @@ StructManager::StructManager(const connection_struct &connectionStruct) {
 	serverAddress_.sin_addr.s_addr = inet_addr(connectionStruct.ip.c_str());
 }
 
-struct sockaddr_in *StructManager::getAddress() {
+struct sockaddr_in *StructManager::getStruct() {
 	return &serverAddress_;
 }
 

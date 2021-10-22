@@ -47,7 +47,7 @@ void Server::FDBeginner() {
 
 void Server::doAccept() {
 //    for (int acceptFD = 1; acceptFD != -1; ) {
-int acceptFD;
+        int acceptFD;
         Debug::Log("new connect");
         acceptFD = accept(socket_, reinterpret_cast<sockaddr*>(structManager.getStruct()), structManager.getSize());
         if (acceptFD < 0) {
@@ -89,20 +89,6 @@ int Server::doRead(int &socket) {
     }
     return 0;
 }
-
-//int Server::sendAll(int &socket,  const std::string & buf, int bufLength)
-//{
-//    int totalBytesSend = 0;
-//    int bytesLeftToSend = bufLength; // сколько байт осталось послать
-//    int chunk = 0;
-//    while (totalBytesSend < bufLength) {
-//        chunk = send(socket, &buf[totalBytesSend], bytesLeftToSend, 0);
-//        if (chunk == -1) { return -1; }
-//        totalBytesSend += chunk;
-////        bytesLeftToSend -= chunk;
-//    }
-//    return 0;
-//}
 
 void Server::doWrite(int &socket, const std::string & buf) {
     error_ = send(socket, &buf[0], buf.size(), 0);
