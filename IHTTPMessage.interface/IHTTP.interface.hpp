@@ -10,6 +10,7 @@ protected:
 	s_startline s_startline_;
 	s_headers	s_headers_;
 	s_bodies	s_bodies_;
+	int         statusCode_;
 public:
 	virtual void makeStartline() = 0;
 	virtual void makeHeaders() = 0;

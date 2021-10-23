@@ -1,11 +1,11 @@
 #include "Response.class.hpp"
 #include <fstream>
 
-Response::Response(int responseType, const s_startline &startline, const s_headers &headers, const s_bodies &bodies) :
-        statusCode_(responseType) {
+Response::Response(int statusCode, const s_startline &startline, const s_headers &headers, const s_bodies &bodies) {
     s_startline_ = startline;
     requestHeaders_ = headers;
     s_bodies_ = bodies;
+    statusCode_ = statusCode;
     setAttributes();
     createResponse();
 }
@@ -35,10 +35,10 @@ void Response::makeStartline() {
 
 void Response::makeHeaders() {
     setDate();
-    setContentType();
+//    setContentType();
     setContentLength();
-    if (statusCode_ == 405)
-        s_headers_.headers.insert(std::pair<std::string, std::string>("allow:","GET, POST, DELETE\r\n"));
+//    if (statusCode_ == 405)
+//        s_headers_.headers.insert(std::pair<std::string, std::string>("Allow:","GET, POST, DELETE\r\n"));
 }
 
 void Response::makeBodies() {
@@ -60,8 +60,8 @@ void Response::makeBodies() {
  */
 
 void Response::setAttributes() {
-    makeStartline();
     makeBodies();
+    makeStartline();
 	makeHeaders();
 }
 
@@ -70,11 +70,9 @@ void Response::setAttributes() {
  */
 
 void Response::setDate() {
-    const std::string day[]={"Sun","Mon","Tue",
-                             "Wed","Thu","Fri","Sat"};
+    const std::string day[]={"Sun","Mon","Tue", "Wed","Thu","Fri","Sat"};
 
-    const std::string month[]={"Jan","Feb","Mar",
-                               "Apr","May","Jun","Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+    const std::string month[]={"Jan","Feb","Mar", "Apr","May","Jun","Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
     time_t	rawTime;
     struct	tm * timeInfo;
@@ -85,14 +83,13 @@ void Response::setDate() {
 
     out << day[timeInfo->tm_wday] << ", "
     << std::setw(2) << std::setfill('0') << timeInfo->tm_mday << " "
-    << month[timeInfo->tm_mon] << " "
-    << (timeInfo->tm_year + 1900) << " "
+    << month[timeInfo->tm_mon] << " " << (timeInfo->tm_year + 1900) << " "
     << std::setw(2) << std::setfill('0') << timeInfo->tm_hour << ":"
     << std::setw(2) << std::setfill('0') << timeInfo->tm_min << ":"
     << std::setw(2) << std::setfill('0') << timeInfo->tm_sec << " GMT";
     out.str();
 
-    s_headers_.headers.insert(std::pair<std::string, std::string>("date", out.str()));
+    s_headers_.headers.insert(std::pair<std::string, std::string>("Date", out.str()));
 }
 
 /**
@@ -129,8 +126,9 @@ void Response::setErrorBody() {
 }
 
 void Response::doGetMethod() {
-    if (s_startline_.target == "/")
-        return ;
+//    TODO: добавить автоиндекс и подстроить код под него
+    //    if (s_startline_.target == "/")
+//        return ;
 
     std::string filename = s_startline_.target;
     if (filename[0] == '/')
@@ -153,8 +151,6 @@ void Response::doGetMethod() {
 }
 
 void Response::doPostMethod() {
-    if (s_startline_.target == "/")
-        return ;
 
     std::string filename = s_startline_.target;
     filename.erase(0, 1);
@@ -175,26 +171,29 @@ void Response::doPostMethod() {
 }
 
 void Response::doDeleteMethod() {
-
+//    if (s_startline_.target == "/") {
+//        statusCode_ = 405;
+//        s_headers_.headers.insert(std::pair<std::string, std::string>("Allow:","GET\r\n"));
+//    }
 }
 
 /**
- * set attribute content length for http header
+ * set attribute content length for http header according to rfc7230 3.3.2
  */
 
 void Response::setContentLength() {
     std::ostringstream contentLength;
 
-//    if (statusCode_ / 100 == 2)
+//    if (statusCode_ / 100 == 1 || statusCode_ == 204) // такие коды не используются
 //        return ;
     contentLength << body_.length();
-    s_headers_.headers.insert(std::pair<std::string, std::string>("content-length", contentLength.str()));
+    s_headers_.headers.insert(std::pair<std::string, std::string>("Content-Length", contentLength.str()));
 
 }
 
 void Response::setContentType() {
     if (statusCode_ != 200) {
-        s_headers_.headers.insert(std::pair<std::string, std::string>("content-type", "text/html"));
+        s_headers_.headers.insert(std::pair<std::string, std::string>("Content-Type", "text/html"));
         return;
     }
 
@@ -204,7 +203,7 @@ void Response::setContentType() {
     if (startOfType != std::string::npos)
         contentType_ = s_startline_.target.substr(startOfType + 1, s_startline_.target.length());
 
-    s_headers_.headers.insert(std::pair<std::string, std::string>("content-type", contentType_));
+    s_headers_.headers.insert(std::pair<std::string, std::string>("Content-Type", contentType_));
 
 }
 
@@ -213,7 +212,7 @@ void Response::setContentType() {
  */
 
 void Response::createResponse() {
-    response_.append(getStatusLine()); // с++11 синтаксис
+    response_.append(getStatusLine());
     response_.append(s_headers_.getHeaders());
     response_.append("\r\n");
     response_.append(getBody());

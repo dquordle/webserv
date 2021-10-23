@@ -1,11 +1,11 @@
 #include "Request.hpp"
 
-Request::Request(const std::string &request) : request_(request), responseType(0) {
+Request::Request(const std::string &request) : request_(request) {
     makeStartline();
     isBodies_ = (request_.find("\r\n\r\n") + 4 != request_.length());
-    if (responseType == 200)
+    if (statusCode_ == 200)
         makeHeaders();
-    if (responseType == 200)
+    if (statusCode_ == 200)
         makeBodies();
 }
 
@@ -22,6 +22,11 @@ const s_bodies &Request::getBodies() const {
 }
 
 void Request::makeStartline() {
+//    size_t begin = 0;
+//    if (request_.compare(0, 2, "\r\n") == 0)
+//        begin = 2;
+//    std::string	startline = request_.substr(begin, request_.find('\r'));
+
 	std::string	startline = request_.substr(0, request_.find('\r'));
 
 	size_t endMethod, endTarget;
@@ -30,18 +35,19 @@ void Request::makeStartline() {
 
 	if (endMethod == std::string::npos || endTarget == std::string::npos ||
 	endMethod == endTarget) {
-	    responseType = 400;
+	    statusCode_ = 400;
         return;
 	}
 
 	this->s_startline_.method = startline.substr(0, endMethod);
+
     if (!s_startline_.isMethodImplemented()) {
-        responseType = 501;
+        statusCode_ = 501;
         return ;
     }
 
 	if (!s_startline_.isMethodAllowed()) {
-	    responseType = 405;
+	    statusCode_ = 405;
 	    return ;
 	}
 
@@ -51,25 +57,25 @@ void Request::makeStartline() {
 	this->s_startline_.version = startline.substr(startline.find_last_of(' ') + 1);
 
 	if (s_startline_.version.find("HTTP") != 0) {
-	    responseType = 400;
+	    statusCode_ = 400;
 	    return;
 	}
 
 	if (!s_startline_.isVersionCorrect()) {
-	    responseType = 505;
+	    statusCode_ = 505;
 	    return ;
 	}
-	responseType = 200;
+	statusCode_ = 200;
 }
 
 /*
  * fill attribute s_headers_ (map) with key and value from request_ string
  *
  * checks if there whitespace between the header field-name and colon or multiple header fields (according to rfc7230 3.2.4)
- * and sets responseType_ to 400 in that case
+ * and sets statusCode__ to 400 in that case
  *
  * at the end of function checks if Host field-name is provided (according to rfc7230 5.4),
- * sets 400 in responseType_ otherwise
+ * sets 400 in statusCode__ otherwise
  */
 
 void Request::makeHeaders() {
@@ -78,19 +84,19 @@ void Request::makeHeaders() {
     size_t headersBegin = request_.find("\r\n") + 2;
     size_t headersLength = request_.find("\r\n\r\n") - headersBegin + 2;
     _vecHeaders = splitVector(request_.substr(headersBegin, headersLength), "\r\n", false);
-    size_t colon;
 
     std::vector<std::string>::const_iterator it = _vecHeaders.cbegin();
     std::vector<std::string>::const_iterator ite = _vecHeaders.cend();
     for (;it < ite; it++) {
-        colon = (*it).find(':');
-        if (colon == std::string::npos || colon == 0 || (*it)[colon - 1] == ' ') { //rfc 7230 (3.2.4)
-            responseType = 400;
+        if ((statusCode_ = s_headers_.checkHeaderField(*it)) != 200) {
+            s_headers_.headers.clear();
+            return;
         }
-        this->s_headers_.headers[(*it).substr(0, colon)] = (*it).substr(colon + 1);
+        s_headers_.headers[s_headers_.fieldName] = s_headers_.fieldValue;
     }
-    if (!s_headers_.isHostProvided())
-        responseType = 400;
+    if (!s_headers_.isHostProvided() || s_headers_.isBothContLenAndTransfEncod())
+        statusCode_ = 400;
+//    s_headers_.print();
 }
 
 void Request::makeBodies()  {

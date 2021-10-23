@@ -9,15 +9,15 @@ private:
 	struct sockaddr_in	serverAddress_;
 	socklen_t 			size_;
 public:
-	struct connection_struct {
+	typedef struct connection_struct {
 		int port;
 		std::string ip;
 		connection_struct(const int &port, const std::string &ip);
-	};
+	} connectionStruct;
 public:
 	explicit StructManager(const connection_struct &);
 
-	struct sockaddr_in *getAddress();
+	struct sockaddr_in *getStruct();
 
 	socklen_t	*getSize();
 private:
