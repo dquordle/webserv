@@ -2,13 +2,14 @@
 
 PollStruct::PollStruct() {
     memset(fds_, 0, sizeof(fds_));
-    nfds_ = 1;
+    nfds_ = 0;
+	max_listen_sd = 0;
 }
 
-void PollStruct::initialize(const int &socket) {
-    listen_sd = socket;
-    fds_[0].fd = listen_sd;
-    fds_[0].events = POLLIN;
+void PollStruct::addListener(const int &socket) {
+    fds_[nfds_].fd = socket;
+    fds_[nfds_].events = POLLIN;
+    max_listen_sd = nfds_++;
 }
 
 void PollStruct::addConection(const int &new_socket) {
@@ -37,7 +38,8 @@ int PollStruct::getRevents(int i) const {
 }
 
 bool PollStruct::isListenSocket(const int &i) const {
-	return fds_[i].fd == listen_sd;
+//	return fds_[i].fd == listen_sd;
+	return i <= max_listen_sd;
 }
 
 void PollStruct::cleanUpSockets() {

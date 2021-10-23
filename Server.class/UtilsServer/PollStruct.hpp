@@ -11,14 +11,14 @@ class PollStruct {
 private:
 	struct  pollfd fds_[200];
 	int     nfds_;
-	int     current_size_;
-	int     listen_sd;
+	int     current_size_; //?
+	int     max_listen_sd;
 public:
 	typedef ServerException		ServerException;
 public:
 	PollStruct();
 
-	void initialize(const int &);
+	void addListener(const int &);
 
 	int getRevents(int) const;
 

@@ -1,12 +1,5 @@
 #include "Host.hpp"
 
-//Host::errors::errors(std::vector<int> & codes, std::string & page)
-//{
-//	this->page = page;
-//	this->codes = codes;
-//	this->next = NULL;
-//}
-
 Host::Host()
 {
 	_ip = "127.0.0.1";
@@ -15,11 +8,6 @@ Host::Host()
 	_is_default = false;
 
 }
-
-//Host::Host(const Host &host)
-//{
-//
-//}
 
 Host::~Host()
 {
@@ -87,4 +75,31 @@ void Host::setMaxBodySize(const std::string & sizeStr)
 void Host::addRoute(Route &route)
 {
 	_routes.push_back(route);
+}
+
+void Host::setAddress()
+{
+	_address = _ip + "::" + _portStr;
+}
+
+void Host::setDefault(bool isDef)
+{
+	_is_default = isDef;
+}
+
+bool Host::addAddress()
+{
+	std::vector<std::string>::iterator it = Host::addresses.begin();
+	for (; it != Host::addresses.end(); it++)
+	{
+		if (*it == _address)
+			return false;
+	}
+	Host::addresses.push_back(_address);
+	return true;
+}
+
+bool Host::isDefault() const
+{
+	return _is_default;
 }

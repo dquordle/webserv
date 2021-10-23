@@ -21,6 +21,7 @@ std::vector<Host> Parser::parse(const std::string& config)
 	ifs.close();
 	if (hosts.empty())
 		exit(1);
+	finishInitialization(hosts);
 	return hosts;
 }
 
@@ -52,8 +53,6 @@ Host * Parser::parseServer(std::ifstream & ifs)
 		}
 		str = superGetNextLine(ifs);
 	}
-
-//	return *host;
 	exit(1);
 }
 
@@ -150,8 +149,18 @@ std::string Parser::superGetNextLine(std::ifstream & ifs)
 		if (!str.empty())
 			break;
 	}
-
 	return str;
+}
+
+void Parser::finishInitialization(std::vector<Host> hosts)
+{
+	std::vector<Host>::iterator it = hosts.begin();
+	for (; it != hosts.end(); it++)
+	{
+		it->setAddress();
+		bool isDef = it->addAddress();
+		it->setDefault(isDef);
+	}
 }
 
 

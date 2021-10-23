@@ -9,7 +9,7 @@ Server::Server(const Server::connection_struct &connectionStruct) : error_(1), s
 	socketReusable();
 	socketBind();
 	socketListening();
-	PollStruct.initialize(socket_);
+	PollStruct.addListener(socket_);
 	timeout_ = (10 * 60 * 1000);
 	compress = 0;
 }

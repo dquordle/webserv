@@ -11,16 +11,7 @@ class Host
 
 
 public:
-//	typedef struct	errors
-//	{
-//		std::vector<int>	codes;
-//		std::string			page;
-//		errors				*next;
-//		errors(std::vector<int>	& codes, std::string	& page);
-//	} 				structErrors;
-
 	Host();
-//	Host(const Host & host);
 	~Host();
 
 	void setIP(const std::string& ip);
@@ -29,8 +20,13 @@ public:
 	void addError(const std::string & error);
 	void setMaxBodySize(const std::string & size);
 	void addRoute(Route & route);
+	void setAddress();
+	bool addAddress();
+	void setDefault(bool isDef);
 
-	void finishInitialization();
+	bool isDefault() const;
+	int	createSocket();
+
 
 
 
@@ -40,13 +36,14 @@ private:
 	int 						_port;
 	std::vector<std::string>	_server_name;
 	bool						_is_default;
-//	structErrors		*_errors;
 	std::map<int, std::string>	_errors;
 	int 						_max_body_size;
 	std::vector<Route>			_routes;
 
+	std::string					_address;
 
-	static std::vector<std::string> _addresses;
+public:
+	static std::vector<std::string> addresses;
 };
 
 
