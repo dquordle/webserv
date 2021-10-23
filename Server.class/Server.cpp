@@ -5,7 +5,7 @@
 # include "../IHTTPMessage.interface/Request.class/Request.hpp"
 
 Server::Server(const Server::connection_struct &connectionStruct) : error_(1), structManager(connectionStruct), server_run(1) {
-	socketInit(connectionStruct);
+	socketInit();
 	socketReusable();
 	socketBind();
 	socketListening();
@@ -128,7 +128,7 @@ void Server::socketReusable() {
     }
 }
 
-void Server::socketInit(const Server::connection_struct &connectionStruct) {
+void Server::socketInit() {
 	socket_ = socket(AF_INET, SOCK_STREAM, 0);
 
 	if (socket_ == -1) {

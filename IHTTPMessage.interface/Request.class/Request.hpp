@@ -18,7 +18,7 @@ public:
 
 	const s_bodies &getBodies() const;
 
-	int getstatusCode_() const { return statusCode_; }
+	int getStatusCode() const { return statusCode_; }
 
 private:
 	virtual void makeStartline();
