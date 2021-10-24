@@ -14,7 +14,7 @@ int main(int argc, char** argv) {
 	std::vector<Host> hosts = Parser::parse(conf_path);
 
 	Server::connection_struct connectionStruct = StructManager::connection_struct(1111, "127.0.0.1");
-	Server server(connectionStruct);
+	Server server(connectionStruct, &hosts[1]);
 	server.start();
 	return 0;
 }

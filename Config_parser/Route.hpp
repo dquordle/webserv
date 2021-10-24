@@ -31,6 +31,40 @@ public:
 	void setCgiExt(const std::string& cgiExt);
 	void setSavePath(const std::string& savePath);
 	void setMethods(const std::string& methods);
+
+	static size_t findTarget(const Route & ref, const std::string & target) {
+	    std::string name = ref._name;
+	    name.erase(0);
+	    name.erase(name.length());
+	    return target.find(name, 0);
+	}
+
+	static size_t nameDepth(const Route & ref) {
+	    return 	std::count(ref._name.begin(), ref._name.end(), '/');
+	}
+
+	Route(const Route & rhs) : _name(rhs._name), _redirection(rhs._redirection), _directory(rhs._directory), _autoindexOn(rhs._autoindexOn),
+	_index_file(rhs._index_file), _cgi_path(rhs._cgi_path), _cgi_ext(rhs._cgi_ext), _save_path(rhs._save_path)
+	{
+        _allowed_methods = rhs._allowed_methods;
+	}
+
+	Route & operator=(const Route & rhs) {
+	    if (&rhs == this)
+	        return *this;
+	    _name = rhs._name;
+	    _redirection = rhs._redirection;
+	    _directory = rhs._directory;
+	    _autoindexOn = rhs._autoindexOn;
+	    _index_file = rhs._index_file;
+	    _cgi_path = rhs._cgi_path;
+	    _cgi_ext = rhs._cgi_ext;
+	    _save_path = rhs._save_path;
+	    _allowed_methods = rhs._allowed_methods;
+	    return *this;
+	}
+
+	bool isAutoindexOn() { return _autoindexOn; }
 };
 
 

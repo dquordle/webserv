@@ -30,6 +30,7 @@ public:
 	void setMaxBodySize(const std::string & size);
 	void addRoute(Route & route);
 
+	Route * chooseRoute(const std::string & target);
 	void finishInitialization();
 
 

@@ -9,23 +9,24 @@
 #include "../IHTTPMessage.interface/Request.class/Request.hpp"
 #include "../IHTTPMessage.interface/Response.class/Response.class.hpp"
 #include <fcntl.h>
+#include "../Config_parser/Host.hpp"
 
 class Server {
 private:
 	StructManager		structManager;
-	PollStruct		    PollStruct;
-	int					error_;
-	int 				socket_;
-	int					flagsOn_;
-	int                 timeout_;
-	int                 server_run;
-	int                 compress;
+	PollStruct		    _PollStruct;
+	int					_error;
+	int 				_socket;
+	int                 _timeout;
+	int                 _server_run;
+	int                 _compress;
 	std::string         buffer;
+	Host *				_host;
 public:
 	typedef StructManager::connection_struct	connection_struct;
 	typedef ServerException						ServerException;
 public:
-	explicit Server(const Server::connection_struct &);
+	explicit Server(const Server::connection_struct &, Host *);
 
 	void start();
 

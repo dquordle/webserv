@@ -13,16 +13,19 @@
 #include <sys/param.h>
 #include <dirent.h>
 #include <cstring>
+#include "../../Config_parser/Host.hpp"
 
 class Response : public IHTTPMessage {
 private:
-    s_headers   requestHeaders_;
-    std::string response_;
-    std::string statusLine_;
-    std::string body_;
+    s_headers   _requestHeaders;
+    std::string _response;
+    std::string _statusLine;
+    std::string _body;
+    Host *      _host;
+    Route *     _route;
 
 public:
-    Response(int statusCode_, const s_startline &startline, const s_headers &headers, const s_bodies &bodies);
+    Response(int statusCode, const s_startline &startline, const s_headers &headers, const s_bodies &bodies, Host *);
 
 const std::string &getResponse() const;
 

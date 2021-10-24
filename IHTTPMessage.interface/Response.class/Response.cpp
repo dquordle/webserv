@@ -1,11 +1,12 @@
 #include "Response.class.hpp"
 #include <fstream>
 
-Response::Response(int statusCode, const s_startline &startline, const s_headers &headers, const s_bodies &bodies) {
-    s_startline_ = startline;
-    requestHeaders_ = headers;
-    s_bodies_ = bodies;
-    statusCode_ = statusCode;
+Response::Response(int statusCode, const s_startline &startline, const s_headers &headers, const s_bodies &bodies, Host * host) {
+    _s_startline = startline;
+    _requestHeaders = headers;
+    _s_bodies = bodies;
+    _statusCode = statusCode;
+    _host = host;
     setAttributes();
     createResponse();
 }
@@ -15,22 +16,22 @@ Response::Response(int statusCode, const s_startline &startline, const s_headers
  */
 
 void Response::makeStartline() {
-    statusLine_ = "HTTP/1.1 ";
+    _statusLine = "HTTP/1.1 ";
 
     std::string const arrStatus[] = {"200 OK", "400 Bad Request", "404 Not Found", "405 Method Not Allowed",
                                      "501 Not Implemented", "505 HTTP Version Not Supported"};
     std::ostringstream ss;
-    ss << statusCode_;
+    ss << _statusCode;
 
     std::string errorNumber = ss.str();
 
     for (int i = 0; i < 5 ; i++)
         if ((arrStatus[i].find(errorNumber)) != std::string::npos)
         {
-            statusLine_.append(arrStatus[i]);
+            _statusLine.append(arrStatus[i]);
             break;
         }
-    statusLine_.append("\r\n");
+    _statusLine.append("\r\n");
 }
 
 void Response::makeHeaders() {
@@ -38,22 +39,48 @@ void Response::makeHeaders() {
 //    setContentType();
     setContentLength();
     setServerName();
-//    if (statusCode_ == 405)
-//        s_headers_.headers.insert(std::pair<std::string, std::string>("Allow:","GET, POST, DELETE\r\n"));
+//    if (_statusCode == 405)
+//        _s_headers.headers.insert(std::pair<std::string, std::string>("Allow:","GET, POST, DELETE\r\n"));
+}
+
+Route * Host::chooseRoute(const std::string & target) {
+    std::vector<Route>::iterator it = _routes.begin();
+    std::vector<Route>::iterator ite = _routes.end();
+    size_t depth = 0;
+    Route ref = *it;
+
+    for (; it != ite; ++it) {
+        if (Route::findTarget((*it), target) != std::string::npos)
+            if (Route::nameDepth((*it)) > depth)
+            {
+                depth = Route::nameDepth((*it));
+                ref = *it;
+            }
+    }
+    if (depth == 0)
+        return nullptr;
+    return new Route(ref);
 }
 
 void Response::makeBodies() {
-    if (statusCode_ == 200)
+    if (_statusCode == 200)
     {
         //    TODO: если в StatusCode нет ошибки, то искать подходящий роут
-        if (s_startline_.method == "GET")
+        _route = _host->chooseRoute(_s_startline.target);
+        if (_route == nullptr) {
+            _statusCode = 404;
+            setErrorBody();
+            return;
+        }
+        // TODO: если не найден подходящий сетай ошибку
+        if (_s_startline.method == "GET")
             doGetMethod();
-        else if (s_startline_.method == "POST")
+        else if (_s_startline.method == "POST")
             doPostMethod();
         else
             doDeleteMethod();
     }
-    if (statusCode_ != 200)
+    if (_statusCode != 200)
         setErrorBody();
 }
 
@@ -90,13 +117,13 @@ void Response::setDate() {
     << std::setw(2) << std::setfill('0') << timeInfo->tm_min << ":"
     << std::setw(2) << std::setfill('0') << timeInfo->tm_sec << " GMT";
 
-    s_headers_.headers.insert(std::pair<std::string, std::string>("Date", out.str()));
+    _s_headers.headers.insert(std::pair<std::string, std::string>("Date", out.str()));
 }
 
 void Response::setServerName() {
 //    TODO: think about normal name
 // if getServerName from host (aka server) do insert else do not
-    s_headers_.headers.insert(std::pair<std::string, std::string>("Server-Name", "╮(￣_￣)╭"));
+    _s_headers.headers.insert(std::pair<std::string, std::string>("Server-Name", "╮(￣_￣)╭"));
 }
 
 /**
@@ -104,43 +131,43 @@ void Response::setServerName() {
  */
 
 void Response::setErrorBody() {
-    switch (statusCode_) {
+    switch (_statusCode) {
         case 400:
-            body_ = error_400;
+            _body = error_400;
             break;
         case 401:
-            body_ = error_401;
+            _body = error_401;
             break;
         case 403:
-            body_ = error_403;
+            _body = error_403;
             break;
         case 404:
-            body_ = error_404;
+            _body = error_404;
             break;
         case 405:
-            body_ = error_405;
+            _body = error_405;
             break;
         case 413:
-            body_ = error_413;
+            _body = error_413;
             break;
         case 418:
-            body_ = error_418;
+            _body = error_418;
             break;
         case 501:
-            body_ = error_501;
+            _body = error_501;
             break;
         case 505:
-            body_ = error_505;
+            _body = error_505;
             break;
     }
 }
 
 void Response::doGetMethod() {
 //    TODO: добавить автоиндекс и подстроить код под него
-    //    if (s_startline_.target == "/")
+    //    if (_s_startline.target == "/")
 //        return ;
 
-    std::string path = s_startline_.target;
+    std::string path = _s_startline.target;
 //TODO: переписать target если directory
 // моежт не надо создавать path а просто переписать target
     path.erase(0, 1);
@@ -156,10 +183,10 @@ void Response::doGetMethod() {
         else if (s.st_mode & S_IFREG)
             getFile(path);
         else
-            statusCode_ = 403;
+            _statusCode = 403;
     }
     else
-        statusCode_ = 404;
+        _statusCode = 404;
 }
 
 void Response::getFolder(const std::string & path) {
@@ -168,25 +195,26 @@ void Response::getFolder(const std::string & path) {
 //    TODO: isAutoindexOn, если нет то искать index
 
     if ((dir = opendir(path.c_str())) != NULL) {
-        body_ = "<html>\n<head><title>Index of /</title></head>\n<body bgcolor=\"white\">\n<h1>Index of /</h1><hr><pre><a href=\"../\">../</a>\n";
-        while ((ent = readdir(dir)) != NULL) {
-            if (std::strcmp(ent->d_name, ".") == 0 || std::strcmp(ent->d_name, "..") == 0)
-                continue;
-            body_.append("<a href=\"");
-            body_.append(ent->d_name);
-            body_.append("\">");
-            body_.append(ent->d_name);
-            body_.append("</a>\n");
+        if (_route->isAutoindexOn()) {
+            _body = "<html>\n<head><title>Index of /</title></head>\n<body bgcolor=\"white\">\n<h1>Index of /</h1><hr><pre><a href=\"../\">../</a>\n";
+            while ((ent = readdir(dir)) != NULL) {
+                if (std::strcmp(ent->d_name, ".") == 0 || std::strcmp(ent->d_name, "..") == 0)
+                    continue;
+                _body.append("<a href=\"");
+                _body.append(ent->d_name);
+                _body.append("\">");
+                _body.append(ent->d_name);
+                _body.append("</a>\n");
+            }
+            _body.append("</pre><hr></body>\n</html>\n");
+        } else {
+            getFile(path + "/index.html");
+            if (_statusCode == 404)
+                _statusCode = 403;
         }
-        body_.append("</pre><hr></body>\n</html>\n");
-
-//else
-//        getFile(path + "/index.html");
-//        if (statusCode_ == 404)
-//            statusCode_ = 403;
-//        closedir (dir);
+        closedir (dir);
     } else
-        statusCode_ = 403; // может заменить на 500 internal server error, a 403 при EACCES
+        _statusCode = 403; // может заменить на 500 internal server error, a 403 при EACCES
 }
 
 void Response::getFile(const std::string & path) {
@@ -196,28 +224,28 @@ void Response::getFile(const std::string & path) {
         std::string line;
         while (!file.eof()) {
             getline(file, line);
-            body_.append(line);
+            _body.append(line);
             if (file.eof())
                 break;
         }
         file.close();
     } else
-        statusCode_ = 404;
+        _statusCode = 404;
 }
 
 void Response::doPostMethod() {
 
-    std::string filename = s_startline_.target;
+    std::string filename = _s_startline.target;
     filename.erase(0, 1);
 
     std::ofstream	outfile(filename);
     if (!outfile) {
-        statusCode_ = 404;
+        _statusCode = 404;
         return ;
     }
 
-    std::vector<std::string>::iterator it = s_bodies_.bodies.begin();
-    std::vector<std::string>::iterator ite = s_bodies_.bodies.end();
+    std::vector<std::string>::iterator it = _s_bodies.bodies.begin();
+    std::vector<std::string>::iterator ite = _s_bodies.bodies.end();
 
     for (; it != ite; ++it) {
         outfile << (*it);
@@ -227,18 +255,18 @@ void Response::doPostMethod() {
 
 void Response::doDeleteMethod() {
 //    TODO: decide how delete works with folders
-//    if (s_startline_.target == "/") {
-//        statusCode_ = 405;
-//        s_headers_.headers.insert(std::pair<std::string, std::string>("Allow:","GET\r\n"));
+//    if (_s_startline.target == "/") {
+//        _statusCode = 405;
+//        _s_headers.headers.insert(std::pair<std::string, std::string>("Allow:","GET\r\n"));
 //    }
-    std::string filename = s_startline_.target;
+    std::string filename = _s_startline.target;
 
     if (remove((filename.erase(0, 1)).c_str()) == 0) {
-        statusCode_ = 200;
+        _statusCode = 200;
         return ;
     }
-    statusCode_ = 404;
-    body_ = "File is deleted";
+    _statusCode = 404;
+    _body = "File is deleted";
 }
 
 /**
@@ -248,26 +276,26 @@ void Response::doDeleteMethod() {
 void Response::setContentLength() {
     std::ostringstream contentLength;
 
-//    if (statusCode_ / 100 == 1 || statusCode_ == 204) // такие коды не используются
+//    if (_statusCode / 100 == 1 || _statusCode == 204) // такие коды не используются
 //        return ;
-    contentLength << body_.length();
-    s_headers_.headers.insert(std::pair<std::string, std::string>("Content-Length", contentLength.str()));
+    contentLength << _body.length();
+    _s_headers.headers.insert(std::pair<std::string, std::string>("Content-Length", contentLength.str()));
 
 }
 
 void Response::setContentType() {
-    if (statusCode_ != 200) {
-        s_headers_.headers.insert(std::pair<std::string, std::string>("Content-Type", "text/html"));
+    if (_statusCode != 200) {
+        _s_headers.headers.insert(std::pair<std::string, std::string>("Content-Type", "text/html"));
         return;
     }
 
-    size_t startOfType = s_startline_.target.find_last_of('.');
+    size_t startOfType = _s_startline.target.find_last_of('.');
     std::string contentType_;
 
     if (startOfType != std::string::npos)
-        contentType_ = s_startline_.target.substr(startOfType + 1, s_startline_.target.length());
+        contentType_ = _s_startline.target.substr(startOfType + 1, _s_startline.target.length());
 
-    s_headers_.headers.insert(std::pair<std::string, std::string>("Content-Type", contentType_));
+    _s_headers.headers.insert(std::pair<std::string, std::string>("Content-Type", contentType_));
 
 }
 
@@ -276,14 +304,14 @@ void Response::setContentType() {
  */
 
 void Response::createResponse() {
-    response_.append(getStatusLine());
-    response_.append(s_headers_.getHeaders());
-    response_.append("\r\n");
-    response_.append(getBody());
+    _response.append(getStatusLine());
+    _response.append(_s_headers.getHeaders());
+    _response.append("\r\n");
+    _response.append(getBody());
 }
 
-const std::string &Response::getStatusLine() const { return statusLine_; }
+const std::string &Response::getStatusLine() const { return _statusLine; }
 
-const std::string &Response::getBody() const { return body_; }
+const std::string &Response::getBody() const { return _body; }
 
-const std::string &Response::getResponse() const {return response_; }
+const std::string &Response::getResponse() const {return _response; }
