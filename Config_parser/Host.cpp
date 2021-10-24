@@ -103,3 +103,22 @@ bool Host::isDefault() const
 {
 	return _is_default;
 }
+
+void Host::setSockAddr()
+{
+	_sockaddrIn.sin_family = AF_INET;
+	_sockaddrIn.sin_port = htons(_port);
+	_sockaddrIn.sin_addr.s_addr = inet_addr(_ip.c_str());
+	_size = sizeof(_sockaddrIn);
+}
+
+sockaddr *Host::getSockAddr()
+{
+	return reinterpret_cast<sockaddr *>(&_sockaddrIn);
+}
+
+socklen_t Host::getSockAddrSize()
+{
+	return _size;
+}
+

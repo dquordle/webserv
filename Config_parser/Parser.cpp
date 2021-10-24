@@ -160,6 +160,7 @@ void Parser::finishInitialization(std::vector<Host> hosts)
 		it->setAddress();
 		bool isDef = it->addAddress();
 		it->setDefault(isDef);
+		it->setSockAddr();
 	}
 }
 

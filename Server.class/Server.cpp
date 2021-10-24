@@ -81,6 +81,7 @@ int Server::doRead(int &socket) {
         if (error_ == 0) {
             std::string mes = std::to_string(socket) + " close connect";
             Debug::Log(mes, true);
+//            PollStruct::closeConnection(?);
         } else
             Debug::Log("recv() failed", true);
         return 1;

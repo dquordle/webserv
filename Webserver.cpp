@@ -1,9 +1,10 @@
 #include "Webserver.hpp"
 
-Webserver::Webserver(const std::vector<Host>& Hosts) : hosts(Hosts)
+Webserver::Webserver(const std::vector<Host>& Hosts) : hosts(Hosts), error_(0), server_run(true)
 {
 	createSockets();
 }
+Webserver::~Webserver() {}
 
 void Webserver::createSockets()
 {
@@ -14,7 +15,7 @@ void Webserver::createSockets()
 		{
 			int sock = socketInit();
 			socketReusable(sock);
-			socketBind(sock);
+			socketBind(sock, *it);
 			socketListening(sock);
 			pollStruct.addListener(sock);
 		}
@@ -32,39 +33,56 @@ int Webserver::socketInit() {
 
 void Webserver::socketReusable(int sock) {
 	int flagsOn_;
-	int error = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&flagsOn_, sizeof(int));
+	error_ = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&flagsOn_, sizeof(int));
 
-	if (error < 0) {
-		close(sock);
+	if (error_ < 0) {
+		// close(sock);
+		pollStruct.cleanUpSockets();
 //		throw Server::ServerException("setsockopt() failed");
 		exit(1);
 	}
 }
 
-void Webserver::socketBind(int sock) {
-	int error = fcntl(sock, F_SETFL, O_NONBLOCK);
-	if (error < 0) {
-		close(sock);
+void Webserver::socketBind(int sock, Host& host)
+{
+	error_ = fcntl(sock, F_SETFL, O_NONBLOCK);
+	if (error_ < 0) {
+		// close(sock);
+		pollStruct.cleanUpSockets();
 //		throw Server::ServerException("fcntl() failed");
 		exit(1);
 	}
 
-//	error = bind(sock, reinterpret_cast<sockaddr *>((structManager.getStruct())), *structManager.getSize()); ////
-//	if (error_ == -1) {
-//		close(socket_);
+//	error_ = bind(sock, reinterpret_cast<sockaddr *>((structManager.getStruct())), *structManager.getSize()); ////
+	error_ = bind(sock, host.getSockAddr(), host.getSockAddrSize());
+	if (error_ == -1) {
+		// close(sock);
+		pollStruct.cleanUpSockets();
 //		throw Server::ServerException("no bind");
-//	}
+		exit(1);
+	}
 }
 
 void Webserver::socketListening(int sock) {
-//	error_ = listen(socket_, 10);
-//	if (error_ == -1) {
-//		close(socket_);
+	error_ = listen(sock, 10);
+	if (error_ == -1) {
+		// close(sock);
+		pollStruct.cleanUpSockets();
 //		throw Server::ServerException("no listen");
-//	}
+		exit(1);
+	}
 }
 
+void Webserver::start()
+{
+	Debug::Log("Start server");
 
+	for (;server_run;) {
+		pollStruct.makePoll(timeout_);
+		FDBeginner();
+	}
+	pollStruct.cleanUpSockets();
+}
 
 
 

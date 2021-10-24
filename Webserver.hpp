@@ -12,6 +12,11 @@ class Webserver
 private:
 	PollStruct		    pollStruct;
 	std::vector<Host>	hosts;
+	int					error_;
+	bool 				server_run;
+	int                 timeout_;
+	int                 compress;
+	std::string         buffer;
 
 
 public:
@@ -23,11 +28,8 @@ private:
 	void createSockets();
 	int socketInit();
 	void socketReusable(int sock);
-	void socketBind(int sock);
+	void socketBind(int sock, Host& host);
 	void socketListening(int sock);
-
-
-
 
 	void FDBeginner();
 

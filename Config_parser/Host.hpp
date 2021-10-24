@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <map>
+#include <arpa/inet.h>
 #include "Route.hpp"
 
 
@@ -14,20 +15,20 @@ public:
 	Host();
 	~Host();
 
-	void setIP(const std::string& ip);
-	void setPort(const std::string& port);
-	void setServerName(const std::string& name);
-	void addError(const std::string & error);
-	void setMaxBodySize(const std::string & size);
-	void addRoute(Route & route);
-	void setAddress();
-	bool addAddress();
-	void setDefault(bool isDef);
+	void 		setIP(const std::string& ip);
+	void 		setPort(const std::string& port);
+	void 		setServerName(const std::string& name);
+	void 		addError(const std::string & error);
+	void 		setMaxBodySize(const std::string & size);
+	void 		addRoute(Route & route);
+	void 		setAddress();
+	bool 		addAddress();
+	void 		setDefault(bool isDef);
+	void 		setSockAddr();
+	sockaddr*	getSockAddr();
+	socklen_t 	getSockAddrSize();
 
 	bool isDefault() const;
-	int	createSocket();
-
-
 
 
 private:
@@ -41,6 +42,9 @@ private:
 	std::vector<Route>			_routes;
 
 	std::string					_address;
+
+	struct sockaddr_in			_sockaddrIn;
+	socklen_t					_size;
 
 public:
 	static std::vector<std::string> addresses;
