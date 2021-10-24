@@ -5,8 +5,6 @@
 #include <fstream>
 #include <iostream>
 
-const std::string DEFAULT_CONFIG_PATH = "../g_doggy.conf";
-
 class Parser
 {
 public:
@@ -19,7 +17,7 @@ private:
 	static void parseRoutes(std::ifstream & ifstream, Host & host);
 	static Route* parseRoute(std::ifstream & ifstream, const std::string& name);
 	static void putFieldIntoRoute(Route & route, const std::string& key, const std::string& value);
-	static void finishInitialization(std::vector<Host> hosts);
+	static void finishInitialization(std::vector<Host> & hosts);
 
 };
 

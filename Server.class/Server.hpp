@@ -19,7 +19,7 @@ private:
 	int					flagsOn_;
 	int                 timeout_;
 	int                 server_run;
-	int                 compress;
+	int                 compress_;
 	std::string         buffer;
 public:
 	typedef StructManager::connection_struct	connection_struct;

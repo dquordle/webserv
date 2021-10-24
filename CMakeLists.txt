@@ -5,8 +5,8 @@ set(CMAKE_CXX_STANDARD 98)
 
 add_executable(webserv
         main.cpp
-        Server.class/Server.cpp
-        Server.class/UtilsServer/StructManager.cpp
+#        Server.class/Server.cpp
+#        Server.class/UtilsServer/StructManager.cpp
         Server.class/UtilsServer/PollStruct.cpp
         Server.class/ServerException/ServerException.cpp
         Debug.class/Debug.cpp
@@ -17,5 +17,5 @@ add_executable(webserv
         Config_parser/Host.cpp
         Config_parser/Parser.cpp
         Errors/Errors.cpp
-        Server.class/filekakfile.cpp
-        Webserver.cpp)
+#        Server.class/filekakfile.cpp
+        Webserver.class/Webserver.cpp)

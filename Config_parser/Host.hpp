@@ -6,13 +6,11 @@
 #include <arpa/inet.h>
 #include "Route.hpp"
 
-
 class Host
 {
 
-
 public:
-	Host();
+	Host(); ///////////////////////
 	~Host();
 
 	void 		setIP(const std::string& ip);
@@ -26,7 +24,9 @@ public:
 	void 		setDefault(bool isDef);
 	void 		setSockAddr();
 	sockaddr*	getSockAddr();
-	socklen_t 	getSockAddrSize();
+	socklen_t* 	getSockAddrSize();
+	void 		setIndex(int index);
+	int			getIndex() const;
 
 	bool isDefault() const;
 
@@ -46,9 +46,12 @@ private:
 	struct sockaddr_in			_sockaddrIn;
 	socklen_t					_size;
 
+	int 						_indexOfSocket;
+
 public:
 	static std::vector<std::string> addresses;
 };
 
+//std::vector<std::string> Host::addresses;
 
 #endif

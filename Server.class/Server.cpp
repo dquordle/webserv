@@ -11,7 +11,7 @@ Server::Server(const Server::connection_struct &connectionStruct) : error_(1), s
 	socketListening();
 	PollStruct.addListener(socket_);
 	timeout_ = (10 * 60 * 1000);
-	compress = 0;
+	compress_ = 0;
 }
 
 void Server::start() {
@@ -37,11 +37,10 @@ void Server::FDBeginner() {
         else {
             handleConnection(i);
         }
-        if (compress) {
-            compress = 0;
+        if (compress_) {
+			compress_ = 0;
             PollStruct.compress();
         }
-
 	}
 }
 
@@ -69,7 +68,7 @@ void Server::handleConnection(int &i) {
     doWrite(socket, resp.getResponse());
     if (closeConnection) {
         PollStruct.closeConnection(i);
-        compress = 1;
+		compress_ = 1;
     }
 }
 

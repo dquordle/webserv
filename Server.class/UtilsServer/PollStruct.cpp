@@ -6,10 +6,11 @@ PollStruct::PollStruct() {
 	max_listen_sd = 0;
 }
 
-void PollStruct::addListener(const int &socket) {
+int PollStruct::addListener(int socket) {
     fds_[nfds_].fd = socket;
     fds_[nfds_].events = POLLIN;
     max_listen_sd = nfds_++;
+	return max_listen_sd;
 }
 
 void PollStruct::addConection(const int &new_socket) {

@@ -1,12 +1,14 @@
 #include "Host.hpp"
 
+std::vector<std::string> Host::addresses;
+
 Host::Host()
 {
 	_ip = "127.0.0.1";
 	_port = 80;
 	_portStr = "80";
 	_is_default = false;
-
+	_indexOfSocket = -1;
 }
 
 Host::~Host()
@@ -89,13 +91,13 @@ void Host::setDefault(bool isDef)
 
 bool Host::addAddress()
 {
-	std::vector<std::string>::iterator it = Host::addresses.begin();
-	for (; it != Host::addresses.end(); it++)
+	std::vector<std::string>::iterator it = addresses.begin();
+	for (; it != addresses.end(); it++)
 	{
 		if (*it == _address)
 			return false;
 	}
-	Host::addresses.push_back(_address);
+	addresses.push_back(_address);
 	return true;
 }
 
@@ -112,13 +114,23 @@ void Host::setSockAddr()
 	_size = sizeof(_sockaddrIn);
 }
 
-sockaddr *Host::getSockAddr()
+sockaddr* Host::getSockAddr()
 {
 	return reinterpret_cast<sockaddr *>(&_sockaddrIn);
 }
 
-socklen_t Host::getSockAddrSize()
+socklen_t* Host::getSockAddrSize()
 {
-	return _size;
+	return &_size;
+}
+
+void Host::setIndex(int index)
+{
+	_indexOfSocket = index;
+}
+
+int Host::getIndex() const
+{
+	return _indexOfSocket;
 }
 

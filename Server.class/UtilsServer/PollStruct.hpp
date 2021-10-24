@@ -18,7 +18,7 @@ public:
 public:
 	PollStruct();
 
-	void addListener(const int &);
+	int addListener(int socket);
 
 	int getRevents(int) const;
 

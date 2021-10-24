@@ -152,7 +152,7 @@ std::string Parser::superGetNextLine(std::ifstream & ifs)
 	return str;
 }
 
-void Parser::finishInitialization(std::vector<Host> hosts)
+void Parser::finishInitialization(std::vector<Host> & hosts)
 {
 	std::vector<Host>::iterator it = hosts.begin();
 	for (; it != hosts.end(); it++)
