@@ -37,6 +37,7 @@ void Response::makeHeaders() {
     setDate();
 //    setContentType();
     setContentLength();
+    setServerName();
 //    if (statusCode_ == 405)
 //        s_headers_.headers.insert(std::pair<std::string, std::string>("Allow:","GET, POST, DELETE\r\n"));
 }
@@ -44,6 +45,7 @@ void Response::makeHeaders() {
 void Response::makeBodies() {
     if (statusCode_ == 200)
     {
+        //    TODO: если в StatusCode нет ошибки, то искать подходящий роут
         if (s_startline_.method == "GET")
             doGetMethod();
         else if (s_startline_.method == "POST")
@@ -51,7 +53,7 @@ void Response::makeBodies() {
         else
             doDeleteMethod();
     }
-    if (statusCode_ != 200)
+    else
         setErrorBody();
 }
 
@@ -70,9 +72,9 @@ void Response::setAttributes() {
  */
 
 void Response::setDate() {
-    const std::string day[]={"Sun","Mon","Tue", "Wed","Thu","Fri","Sat"};
+    const std::string day[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 
-    const std::string month[]={"Jan","Feb","Mar", "Apr","May","Jun","Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+    const std::string month[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
     time_t	rawTime;
     struct	tm * timeInfo;
@@ -87,9 +89,14 @@ void Response::setDate() {
     << std::setw(2) << std::setfill('0') << timeInfo->tm_hour << ":"
     << std::setw(2) << std::setfill('0') << timeInfo->tm_min << ":"
     << std::setw(2) << std::setfill('0') << timeInfo->tm_sec << " GMT";
-    out.str();
 
     s_headers_.headers.insert(std::pair<std::string, std::string>("Date", out.str()));
+}
+
+void Response::setServerName() {
+//    TODO: think about normal name
+// if getServerName from host (aka server) do insert else do not
+    s_headers_.headers.insert(std::pair<std::string, std::string>("Server-Name", "╮(￣_￣)╭"));
 }
 
 /**
@@ -113,6 +120,9 @@ void Response::setErrorBody() {
         case 405:
             body_ = error_405;
             break;
+        case 413:
+            body_ = error_413;
+            break;
         case 418:
             body_ = error_418;
             break;
@@ -130,23 +140,62 @@ void Response::doGetMethod() {
     //    if (s_startline_.target == "/")
 //        return ;
 
-    std::string filename = s_startline_.target;
-    if (filename[0] == '/')
-        filename.erase(0, 1);
+    std::string path = s_startline_.target;
+//TODO: переписать target если directory
+// моежт не надо создавать path а просто переписать target
+    path.erase(0, 1);
 
-    std::ifstream file(filename);
+    struct stat s;
+    if (stat(path.c_str(), &s) == 0) {
+        if (s.st_mode & S_IFDIR)
+            getFolder(path);
+        else if (s.st_mode & S_IFREG)
+            getFile(path);
+        else
+            statusCode_ = 404;
+    }
+}
+
+void Response::getFolder(const std::string & path) {
+    DIR *dir;
+    struct dirent *ent;
+//    TODO: это если автоиндекс, если нетб то искать index
+
+    if ((dir = opendir(path.c_str())) != NULL) {
+//        body_ = "<html>\n<head><title>Index of /</title></head>\n<body bgcolor=\"white\">\n<h1>Index of /</h1><hr><pre><a href=\"../\">../</a>\n";
+//        while ((ent = readdir(dir)) != NULL) {
+//            if (std::strcmp(ent->d_name, ".") == 0 || std::strcmp(ent->d_name, "..") == 0)
+//                continue;
+//            body_.append("<a href=\"");
+//            body_.append(ent->d_name);
+//            body_.append("\">");
+//            body_.append(ent->d_name);
+//            body_.append("</a>\n");
+//        }
+//        body_.append("</pre><hr></body>\n</html>\n");
+
+//else
+        getFile(path + "/index.html");
+        if (statusCode_ == 404)
+            statusCode_ = 403;
+        closedir (dir);
+    } else
+        statusCode_ = 404;
+}
+
+void Response::getFile(const std::string & path) {
+    std::ifstream file(path);
+    std::string line;
 
     if (file.is_open()) {
-        std::string line;
         while (!file.eof()) {
             getline(file, line);
             body_.append(line);
             if (file.eof())
-                break ;
+                break;
         }
         file.close();
-    }
-    else
+    } else
         statusCode_ = 404;
 }
 
@@ -171,10 +220,19 @@ void Response::doPostMethod() {
 }
 
 void Response::doDeleteMethod() {
+//    TODO: decide how delete works with folders
 //    if (s_startline_.target == "/") {
 //        statusCode_ = 405;
 //        s_headers_.headers.insert(std::pair<std::string, std::string>("Allow:","GET\r\n"));
 //    }
+    std::string filename = s_startline_.target;
+
+    if (remove((filename.erase(0, 1)).c_str()) == 0) {
+        statusCode_ = 200;
+        return ;
+    }
+    statusCode_ = 404;
+    body_ = "File is deleted";
 }
 
 /**

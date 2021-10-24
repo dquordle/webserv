@@ -104,12 +104,15 @@ void Request::makeBodies()  {
 		return;
 
 	std::string bodyBegin = request_.substr(request_.find("\r\n\r\n") + 4);
+	//	TODO: isBodyLimit - проверить что не был ограничен размер на максимальный размер запроса, если размер тела превышает его то - HTTP 413 (Request Entity Too Large Error)
     std::vector<std::string> vSplit = splitVector(bodyBegin);
 
     s_bodies_.bodies = vSplit;
     if (this->s_bodies_.bodies.empty())
 		this->s_bodies_.bodies.clear();
 }
+
+int Request::getStatusCode() const { return statusCode_; }
 
 std::vector<std::string> Request::splitVector(std::string lines, const std::string &delimiter, bool keepDelimiter) const  {
 	std::vector<std::string>	result;

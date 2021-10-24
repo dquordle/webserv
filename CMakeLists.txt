@@ -7,7 +7,7 @@ add_executable(webserv
         main.cpp
         Server.class/Server.cpp
         Server.class/UtilsServer/StructManager.cpp
-        Server.class/UtilsServer/SelectHelper.cpp
+        Server.class/UtilsServer/PollStruct.cpp
         Server.class/ServerException/ServerException.cpp
         Debug.class/Debug.cpp
         IHTTPMessage.interface/Request.class/Request.cpp

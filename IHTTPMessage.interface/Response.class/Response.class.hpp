@@ -7,15 +7,18 @@
 #include <iostream>
 #include <ctime>
 #include <iomanip>
+#include <cstdio>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <dirent.h>
+#include <cstring>
 
 class Response : public IHTTPMessage {
 private:
-    s_headers requestHeaders_;
+    s_headers   requestHeaders_;
     std::string response_;
     std::string statusLine_;
     std::string body_;
-//    int Code_;
 
 public:
     Response(int statusCode_, const s_startline &startline, const s_headers &headers, const s_bodies &bodies);
@@ -33,7 +36,10 @@ private:
     void setDate();
     void setContentLength();
     void setContentType();
+    void setServerName();
     void setErrorBody();
+    void getFolder(const std::string & );
+    void getFile(const std::string & );
     void doGetMethod();
     void doPostMethod();
     void doDeleteMethod();

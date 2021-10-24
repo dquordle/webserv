@@ -39,6 +39,12 @@ static const std::string error_405 =
         "<body bgcolor=\"white\">\r\n"
         "<center><h1>405 Method Not Allowed</h1></center>\r\n";
 
+static const std::string error_413 =
+        "<html>\r\n"
+        "<head><title>413 Request Entity Too Large</title></head>\r\n"
+        "<body bgcolor=\"white\">\r\n"
+        "<center><h1>413 Request Entity Too Large</h1></center>\r\n";
+
 static const std::string error_418 =
         "<html>\r\n"
         "<head><title>418 I'm a teapot</title></head>\r\n"

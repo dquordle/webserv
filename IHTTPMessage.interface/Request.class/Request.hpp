@@ -18,7 +18,7 @@ public:
 
 	const s_bodies &getBodies() const;
 
-	int getStatusCode() const { return statusCode_; }
+	int getStatusCode() const;
 
 private:
 	virtual void makeStartline();
@@ -27,7 +27,7 @@ private:
 
 private:
 	std::vector<std::string>	splitVector(std::string lines, const std::string &delimiter = "\n", bool keepDelimiter = true) const;
-//    int statusCode_;
+
 };
 
 #endif
