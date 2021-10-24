@@ -5,11 +5,16 @@
 # include "../IHTTPMessage.interface/Request.class/Request.hpp"
 
 Server::Server(const Server::connection_struct &connectionStruct) : error_(1), structManager(connectionStruct), server_run(1) {
-	socketInit();
-	socketReusable();
-	socketBind();
-	socketListening();
-	PollStruct.initialize(socket_);
+    try {
+        socketInit();
+        socketReusable();
+        socketBind();
+        socketListening();
+        PollStruct.initialize(socket_);
+    } catch (std::exception &ex)
+    {
+        Debug::Log(ex.what());
+    }
 	timeout_ = (10 * 60 * 1000);
 	compress = 0;
 }
@@ -120,7 +125,7 @@ void Server::socketBind() {
 }
 
 void Server::socketReusable() {
-    error_ = setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR, (char *)&flagsOn_, sizeof(int));
+    error_ = setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR, &error_, sizeof(int));
 
     if (error_ < 0) {
         close(socket_);

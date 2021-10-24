@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/param.h>
 #include <dirent.h>
 #include <cstring>
 

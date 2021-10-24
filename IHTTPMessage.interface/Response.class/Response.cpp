@@ -53,7 +53,7 @@ void Response::makeBodies() {
         else
             doDeleteMethod();
     }
-    else
+    if (statusCode_ != 200)
         setErrorBody();
 }
 
@@ -144,6 +144,10 @@ void Response::doGetMethod() {
 //TODO: переписать target если directory
 // моежт не надо создавать path а просто переписать target
     path.erase(0, 1);
+    if (path.empty()) {
+        char buf[MAXPATHLEN];
+        path = getwd(buf);
+    }
 
     struct stat s;
     if (stat(path.c_str(), &s) == 0) {
@@ -152,42 +156,44 @@ void Response::doGetMethod() {
         else if (s.st_mode & S_IFREG)
             getFile(path);
         else
-            statusCode_ = 404;
+            statusCode_ = 403;
     }
+    else
+        statusCode_ = 404;
 }
 
 void Response::getFolder(const std::string & path) {
     DIR *dir;
     struct dirent *ent;
-//    TODO: это если автоиндекс, если нетб то искать index
+//    TODO: isAutoindexOn, если нет то искать index
 
     if ((dir = opendir(path.c_str())) != NULL) {
-//        body_ = "<html>\n<head><title>Index of /</title></head>\n<body bgcolor=\"white\">\n<h1>Index of /</h1><hr><pre><a href=\"../\">../</a>\n";
-//        while ((ent = readdir(dir)) != NULL) {
-//            if (std::strcmp(ent->d_name, ".") == 0 || std::strcmp(ent->d_name, "..") == 0)
-//                continue;
-//            body_.append("<a href=\"");
-//            body_.append(ent->d_name);
-//            body_.append("\">");
-//            body_.append(ent->d_name);
-//            body_.append("</a>\n");
-//        }
-//        body_.append("</pre><hr></body>\n</html>\n");
+        body_ = "<html>\n<head><title>Index of /</title></head>\n<body bgcolor=\"white\">\n<h1>Index of /</h1><hr><pre><a href=\"../\">../</a>\n";
+        while ((ent = readdir(dir)) != NULL) {
+            if (std::strcmp(ent->d_name, ".") == 0 || std::strcmp(ent->d_name, "..") == 0)
+                continue;
+            body_.append("<a href=\"");
+            body_.append(ent->d_name);
+            body_.append("\">");
+            body_.append(ent->d_name);
+            body_.append("</a>\n");
+        }
+        body_.append("</pre><hr></body>\n</html>\n");
 
 //else
-        getFile(path + "/index.html");
-        if (statusCode_ == 404)
-            statusCode_ = 403;
-        closedir (dir);
+//        getFile(path + "/index.html");
+//        if (statusCode_ == 404)
+//            statusCode_ = 403;
+//        closedir (dir);
     } else
-        statusCode_ = 404;
+        statusCode_ = 403; // может заменить на 500 internal server error, a 403 при EACCES
 }
 
 void Response::getFile(const std::string & path) {
     std::ifstream file(path);
-    std::string line;
 
     if (file.is_open()) {
+        std::string line;
         while (!file.eof()) {
             getline(file, line);
             body_.append(line);
