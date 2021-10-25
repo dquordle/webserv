@@ -46,10 +46,10 @@ void Request::makeStartline() {
         return ;
     }
 
-	if (!_s_startline.isMethodAllowed()) {
-	    _statusCode = 405;
-	    return ;
-	}
+//	if (!_s_startline.isMethodAllowed()) {
+//	    _statusCode = 405;
+//	    return ;
+//	}
 
 	startline.erase(0, endMethod + 1);
 

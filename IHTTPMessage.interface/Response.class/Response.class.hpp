@@ -41,10 +41,14 @@ private:
     void setContentLength();
     void setContentType();
     void setServerName();
+
+    void setDefaultError();
     void setErrorBody();
-    void getFolder(const std::string & );
-    void getFile(const std::string & );
+
+    void getFolder(std::string & );
+    void getFile(std::string & );
     void doGetMethod();
+
     void doPostMethod();
     void doDeleteMethod();
 

@@ -33,6 +33,7 @@ public:
 	Route * chooseRoute(const std::string & target);
 	void finishInitialization();
 
+	const std::string isNonDefaultErrorPage(int statusCode) const;
 
 
 private:

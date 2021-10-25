@@ -7,6 +7,7 @@ Response::Response(int statusCode, const s_startline &startline, const s_headers
     _s_bodies = bodies;
     _statusCode = statusCode;
     _host = host;
+    _s_startline.target.insert(0, _requestHeaders.getReferer());
     setAttributes();
     createResponse();
 }
@@ -18,7 +19,7 @@ Response::Response(int statusCode, const s_startline &startline, const s_headers
 void Response::makeStartline() {
     _statusLine = "HTTP/1.1 ";
 
-    std::string const arrStatus[] = {"200 OK", "400 Bad Request", "404 Not Found", "405 Method Not Allowed",
+    std::string const arrStatus[] = {"200 OK", "400 Bad Request", "403 Forbidden", "404 Not Found", "405 Method Not Allowed",
                                      "501 Not Implemented", "505 HTTP Version Not Supported"};
     std::ostringstream ss;
     ss << _statusCode;
@@ -131,6 +132,30 @@ void Response::setServerName() {
  */
 
 void Response::setErrorBody() {
+//    TODO: подумать про самопроверку
+    std::string err;
+
+    err = _host->isNonDefaultErrorPage(_statusCode);
+    if (!err.empty()) {
+        err.erase(0,1);
+
+        std::ifstream file(err);
+        if (file.is_open()) {
+            std::string line;
+            while (!file.eof()) {
+                getline(file, line);
+                _body.append(line);
+                if (file.eof())
+                    break;
+            }
+            file.close();
+            return;
+        }
+    }
+    setDefaultError();
+}
+
+void Response::setDefaultError() {
     switch (_statusCode) {
         case 400:
             _body = error_400;
@@ -163,13 +188,10 @@ void Response::setErrorBody() {
 }
 
 void Response::doGetMethod() {
-//    TODO: добавить автоиндекс и подстроить код под него
-    //    if (_s_startline.target == "/")
-//        return ;
-
     std::string path = _s_startline.target;
 //TODO: переписать target если directory
 // моежт не надо создавать path а просто переписать target
+
     path.erase(0, 1);
     if (path.empty()) {
         char buf[MAXPATHLEN];
@@ -189,10 +211,9 @@ void Response::doGetMethod() {
         _statusCode = 404;
 }
 
-void Response::getFolder(const std::string & path) {
+void Response::getFolder(std::string & path) {
     DIR *dir;
     struct dirent *ent;
-//    TODO: isAutoindexOn, если нет то искать index
 
     if ((dir = opendir(path.c_str())) != NULL) {
         if (_route->isAutoindexOn()) {
@@ -208,7 +229,7 @@ void Response::getFolder(const std::string & path) {
             }
             _body.append("</pre><hr></body>\n</html>\n");
         } else {
-            getFile(path + "/index.html");
+            getFile(path.append("/index.html"));
             if (_statusCode == 404)
                 _statusCode = 403;
         }
@@ -217,7 +238,7 @@ void Response::getFolder(const std::string & path) {
         _statusCode = 403; // может заменить на 500 internal server error, a 403 при EACCES
 }
 
-void Response::getFile(const std::string & path) {
+void Response::getFile(std::string & path) {
     std::ifstream file(path);
 
     if (file.is_open()) {
@@ -263,10 +284,10 @@ void Response::doDeleteMethod() {
 
     if (remove((filename.erase(0, 1)).c_str()) == 0) {
         _statusCode = 200;
+        _body = "File is deleted";
         return ;
     }
     _statusCode = 404;
-    _body = "File is deleted";
 }
 
 /**

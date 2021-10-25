@@ -81,10 +81,18 @@ void Host::setMaxBodySize(const std::string & sizeStr)
 	int size;
 	sscanf(sizeStr.c_str(), "%d", &size);
 	_max_body_size = size;
-
 }
 
 void Host::addRoute(Route &route)
 {
 	_routes.push_back(route);
+}
+
+const std::string Host::isNonDefaultErrorPage(int statusCode) const {
+    std::map<int, std::string>::const_iterator it;
+
+    it = _errors.find(statusCode);
+    if (it == _errors.end())
+        return std::string();
+    return it->second;
 }
