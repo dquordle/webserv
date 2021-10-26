@@ -7,6 +7,7 @@ Response::Response(int statusCode, const s_startline &startline, const s_headers
     _s_bodies = bodies;
     _statusCode = statusCode;
     _host = host;
+//    TODO: может переенести вставку Referer
     _s_startline.target.insert(0, _requestHeaders.getReferer());
     setAttributes();
     createResponse();
@@ -47,18 +48,22 @@ void Response::makeHeaders() {
 Route * Host::chooseRoute(const std::string & target) {
     std::vector<Route>::iterator it = _routes.begin();
     std::vector<Route>::iterator ite = _routes.end();
-    size_t depth = 0;
+    int maxdepth = -1;
+    int currentdepth = -1;
     Route ref = *it;
 
     for (; it != ite; ++it) {
-        if (Route::findTarget((*it), target) != std::string::npos)
-            if (Route::nameDepth((*it)) > depth)
+        if (Route::findTarget((*it), target)) {
+            currentdepth = Route::nameDepth(*it);
+            if (currentdepth > maxdepth)
             {
-                depth = Route::nameDepth((*it));
+                maxdepth = currentdepth;
                 ref = *it;
             }
+// TODO : NAME DEPTH НЕПРАВИЛЬНО СЧИТАЕТ
+        }
     }
-    if (depth == 0)
+    if (maxdepth == -1)
         return nullptr;
     return new Route(ref);
 }
@@ -66,14 +71,12 @@ Route * Host::chooseRoute(const std::string & target) {
 void Response::makeBodies() {
     if (_statusCode == 200)
     {
-        //    TODO: если в StatusCode нет ошибки, то искать подходящий роут
         _route = _host->chooseRoute(_s_startline.target);
         if (_route == nullptr) {
             _statusCode = 404;
             setErrorBody();
             return;
         }
-        // TODO: если не найден подходящий сетай ошибку
         if (_s_startline.method == "GET")
             doGetMethod();
         else if (_s_startline.method == "POST")
@@ -257,6 +260,8 @@ void Response::getFile(std::string & path) {
 void Response::doPostMethod() {
 
     std::string filename = _s_startline.target;
+    filename.erase(0, filename.find_last_of('/'));
+    filename.insert(0, _route->getSavePath());
     filename.erase(0, 1);
 
     std::ofstream	outfile(filename);

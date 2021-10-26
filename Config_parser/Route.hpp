@@ -32,15 +32,20 @@ public:
 	void setSavePath(const std::string& savePath);
 	void setMethods(const std::string& methods);
 
-	static size_t findTarget(const Route & ref, const std::string & target) {
+	static bool findTarget(const Route & ref, const std::string & target) {
 	    std::string name = ref._name;
-	    name.erase(0);
-	    name.erase(name.length());
-	    return target.find(name, 0);
+	    name.erase(0, 1);
+	    name.erase(name.find_last_of('\"'));
+	    return target.find(name) != std::string::npos;
 	}
 
-	static size_t nameDepth(const Route & ref) {
-	    return 	std::count(ref._name.begin(), ref._name.end(), '/');
+	static int nameDepth(const Route & ref) {
+	    int ret = 0;
+//	    TODO: create name without " " and {
+
+        if (ref._name != "\"/\"{")
+	        ret = std::count(ref._name.begin(), ref._name.end(), '/');
+	    return ret;
 	}
 
 	Route(const Route & rhs) : _name(rhs._name), _redirection(rhs._redirection), _directory(rhs._directory), _autoindexOn(rhs._autoindexOn),
@@ -65,6 +70,8 @@ public:
 	}
 
 	bool isAutoindexOn() { return _autoindexOn; }
+
+	std::string getSavePath() const { return _save_path; };
 };
 
 
