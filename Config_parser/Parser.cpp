@@ -84,7 +84,7 @@ void Parser::parseRoutes(std::ifstream &ifs, Host &host)
 		char end = str.at(str.size() - 1);
 		if (start != "route" || end != '{')
 			exit(1);
-		std::string routeName = str.substr(5, str.size() - 1);
+		std::string routeName = str.substr(5, str.size() - 6);
 		Route *route = parseRoute(ifs, routeName);
 		host.addRoute(*route);
 		delete(route);

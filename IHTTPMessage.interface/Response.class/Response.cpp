@@ -60,7 +60,6 @@ Route * Host::chooseRoute(const std::string & target) {
                 maxdepth = currentdepth;
                 ref = *it;
             }
-// TODO : NAME DEPTH НЕПРАВИЛЬНО СЧИТАЕТ
         }
     }
     if (maxdepth == -1)

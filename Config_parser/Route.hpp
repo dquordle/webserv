@@ -33,17 +33,13 @@ public:
 	void setMethods(const std::string& methods);
 
 	static bool findTarget(const Route & ref, const std::string & target) {
-	    std::string name = ref._name;
-	    name.erase(0, 1);
-	    name.erase(name.find_last_of('\"'));
-	    return target.find(name) != std::string::npos;
+	    return target.find(ref._name) != std::string::npos;
 	}
 
 	static int nameDepth(const Route & ref) {
 	    int ret = 0;
-//	    TODO: create name without " " and {
 
-        if (ref._name != "\"/\"{")
+        if (ref._name != "/")
 	        ret = std::count(ref._name.begin(), ref._name.end(), '/');
 	    return ret;
 	}

@@ -19,11 +19,11 @@ struct s_startline {
 		return *this;
 	}
 
-    bool isMethodAllowed() const {
-	    if (method == "GET" || method == "POST" || method == "DELETE")
-	        return true;
-	    return false;
-    }
+//	bool isMethodAllowed() const {
+//	    if (method == "GET" || method == "POST" || method == "DELETE")
+//	        return true;
+//	    return false;
+//    }
 
     bool isVersionCorrect() const {
 	    if (version.compare("HTTP/1.1" ) == 0)
