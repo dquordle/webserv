@@ -1,137 +1,146 @@
 #include "Server.hpp"
-#include <fstream>
 
-# include "../IHTTPMessage.interface/Response.class/errorResponse.hpp"
-# include "../IHTTPMessage.interface/Request.class/Request.hpp"
+std::vector<std::string> Server::addresses;
 
-Server::Server(const Server::connection_struct &connectionStruct) : error_(1), structManager(connectionStruct), server_run(1) {
-	socketInit();
-	socketReusable();
-	socketBind();
-	socketListening();
-	PollStruct.addListener(socket_);
-	timeout_ = (10 * 60 * 1000);
-	compress_ = 0;
+Server::Server()
+{
+	_ip = "127.0.0.1";
+	_port = 80;
+	_portStr = "80";
+	_is_default = false;
+	_indexOfSocket = -1;
 }
 
-void Server::start() {
-	Debug::Log("Start server");
+Server::~Server()
+{
 
-	for (;server_run;) {
-		PollStruct.makePoll(timeout_);
-		FDBeginner();
+}
+
+void Server::setIP(const std::string& ip)
+{
+	if (ip.empty())
+		exit(1);
+	_ip = ip;
+}
+
+void Server::setPort(const std::string& port)
+{
+	size_t pos = port.find_first_not_of("0123456789");
+	if (pos != std::string::npos || port.empty())
+		exit(1);
+	_portStr = port;
+	sscanf(port.c_str(), "%d", &_port);
+}
+
+void Server::setServerName(const std::string & name)
+{
+	if (name.empty())
+		exit(1);
+	size_t prev_pos = 0;
+	size_t pos = name.find(',');
+	while (pos != std::string::npos)
+	{
+		size_t count = pos - prev_pos;
+		std::string serverName = name.substr(prev_pos, count);
+		_server_name.push_back(serverName);
+		prev_pos = pos + 1;
+		pos = name.find(',', prev_pos);
 	}
-	PollStruct.cleanUpSockets();
+	std::string serverName = name.substr(prev_pos, pos);
+	_server_name.push_back(serverName);
 }
 
-void Server::FDBeginner() {
-	for (int i = 0; i < PollStruct.getCount(); i++) {
-	    if (PollStruct.getRevents(i) == 0) continue;
-	    else if ((PollStruct.getRevents(i) & POLLIN) != POLLIN) {
-	        server_run = 0;
-	        Debug::Log("no pollin", true);
-	        break;
-	    }
-        if (PollStruct.isListenSocket(i))
-            doAccept();
-        else {
-            handleConnection(i);
-        }
-        if (compress_) {
-			compress_ = 0;
-            PollStruct.compress();
-        }
+void Server::addError(const std::string & error)
+{
+	if (error.empty())
+		exit(10);
+	std::string errorPage = error.substr(3);
+	if (errorPage.empty())
+		exit(1);
+	if (error.find_first_not_of("0123456789") != 3)
+		exit(1);
+	int code;
+	sscanf(error.c_str(), "%d", &code);
+	_errors[code] = errorPage;
+}
+
+void Server::setMaxBodySize(const std::string & sizeStr)
+{
+	if (sizeStr.empty())
+		exit(1);
+	int size;
+	sscanf(sizeStr.c_str(), "%d", &size);
+	_max_body_size = size;
+
+}
+
+void Server::addRoute(Route &route)
+{
+	_routes.push_back(route);
+}
+
+void Server::setAddress()
+{
+	_address = _ip + ":" + _portStr;
+}
+
+void Server::setDefault(bool isDef)
+{
+	_is_default = isDef;
+}
+
+bool Server::addAddress()
+{
+	std::vector<std::string>::iterator it = addresses.begin();
+	for (; it != addresses.end(); it++)
+	{
+		if (*it == _address)
+			return false;
 	}
+	addresses.push_back(_address);
+	return true;
 }
 
-void Server::doAccept() {
-//    for (int acceptFD = 1; acceptFD != -1; ) {
-        int acceptFD;
-        Debug::Log("new connect");
-        acceptFD = accept(socket_, reinterpret_cast<sockaddr*>(structManager.getStruct()), structManager.getSize());
-        if (acceptFD < 0) {
-            server_run = 0;
-            Debug::Log("no accept", true);
-//            break;
-            throw Server::ServerException("no accept");
-        } else {
-            PollStruct.addConection(acceptFD);
-        }
-//    }
+bool Server::isDefault() const
+{
+	return _is_default;
 }
 
-void Server::handleConnection(int &i) {
-    int socket = PollStruct.getSocket(i);
-    int closeConnection = doRead(socket);
-    Request req(buffer);
-    Response resp(req.getStatusCode(), req.getStartLine(), req.getHeaders(), req.getBodies());
-    doWrite(socket, resp.getResponse());
-    if (closeConnection) {
-        PollStruct.closeConnection(i);
-		compress_ = 1;
-    }
+void Server::setSockAddr()
+{
+	_sockaddrIn.sin_family = AF_INET;
+	_sockaddrIn.sin_port = htons(_port);
+	_sockaddrIn.sin_addr.s_addr = inet_addr(_ip.c_str());
+	_size = sizeof(_sockaddrIn);
 }
 
-int Server::doRead(int &socket) {
-    char buf[1024];
-    std::memset(buf, 0, 1024);
-    error_ = recv(socket, buf, 1024, 0);
-    if (error_ <= 0) {
-        if (error_ == 0) {
-            std::string mes = std::to_string(socket) + " close connect";
-            Debug::Log(mes, true);
-//            PollStruct::closeConnection(?);
-        } else
-            Debug::Log("recv() failed", true);
-        return 1;
-    } else {
-        buffer = std::string(buf);
-    }
-    return 0;
+sockaddr* Server::getSockAddr()
+{
+	return reinterpret_cast<sockaddr *>(&_sockaddrIn);
 }
 
-void Server::doWrite(int &socket, const std::string & buf) {
-    error_ = send(socket, &buf[0], buf.size(), 0);
-    if (error_ == -1) {
-        Debug::Log("no write", true);
-    }
+socklen_t* Server::getSockAddrSize()
+{
+	return &_size;
 }
 
-void Server::socketListening() {
-    error_ = listen(socket_, 10);
-    if (error_ == -1) {
-        close(socket_);
-        throw Server::ServerException("no listen");
-    }
+void Server::setIndex(int index)
+{
+	_indexOfSocket = index;
 }
 
-void Server::socketBind() {
-    error_ = fcntl(socket_, F_SETFL, O_NONBLOCK);
-    if (error_ < 0) {
-        close(socket_);
-        throw Server::ServerException("fcntl() failed");
-    }
-
-	error_ = bind(socket_, reinterpret_cast<sockaddr *>((structManager.getStruct())), *structManager.getSize());
-	if (error_ == -1) {
-	    close(socket_);
-		throw Server::ServerException("no bind");
-	}
+int Server::getIndex() const
+{
+	return _indexOfSocket;
 }
 
-void Server::socketReusable() {
-    error_ = setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR, (char *)&flagsOn_, sizeof(int));
-
-    if (error_ < 0) {
-        close(socket_);
-        throw Server::ServerException("setsockopt() failed");
-    }
+std::string Server::getIp()
+{
+	return _ip;
 }
 
-void Server::socketInit() {
-	socket_ = socket(AF_INET, SOCK_STREAM, 0);
-
-	if (socket_ == -1) {
-		throw Server::ServerException("no socket");
-	}
+std::string Server::getPortStr()
+{
+	return _portStr;
 }
+

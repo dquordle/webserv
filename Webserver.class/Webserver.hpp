@@ -12,17 +12,17 @@ class Webserver
 
 private:
 	PollStruct		    		pollStruct;
-	std::vector<Host>*			hosts;
+	std::vector<Server>*		hosts;
 	int							error_;
 	bool 						server_run;
 	int                 		timeout_;
 	bool                		compress_;
 	std::string         		buffer;
-	std::map<int, std::string>	indexMap;
+//	std::map<int, std::string>	indexMap;
 
 
 public:
-	explicit Webserver(std::vector<Host>* Hosts);
+	explicit Webserver(std::vector<Server>* Hosts);
 	~Webserver();
 	void start();
 
@@ -30,13 +30,13 @@ private:
 	void createSockets();
 	int socketInit();
 	void socketReusable(int sock);
-	void socketBind(int sock, Host& host);
+	void socketBind(int sock, Server& host);
 	void socketListening(int sock);
 
 	void handleEvent();
 
 	void doAccept(int i);
-	Host& getServerByIndex(int index);
+	Server& getServerByIndex(int index);
 	void handleConnection(int i);
 
 	int doRead(int socket);

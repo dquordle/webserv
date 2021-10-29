@@ -1,23 +1,24 @@
 #ifndef WEB_SERVER_PARSER_HPP
 #define WEB_SERVER_PARSER_HPP
 
-#include "Host.hpp"
 #include <fstream>
 #include <iostream>
+#include "../Server.class/ServersFamily.hpp"
 
 class Parser
 {
 public:
-	static std::vector<Host> parse(const std::string& config);
+	static std::vector<Server> parse(const std::string& config);
 
 private:
 	static std::string superGetNextLine(std::ifstream & ifs);
-	static Host* parseServer(std::ifstream & ifstream);
-	static void putFieldIntoHost(Host & host, const std::string& key, const std::string& value);
-	static void parseRoutes(std::ifstream & ifstream, Host & host);
+	static Server* parseServer(std::ifstream & ifstream);
+	static void putServerToFamily(std::vector<ServersFamily> *family, Server & server);
+	static void putFieldIntoHost(Server & server, const std::string& key, const std::string& value);
+	static void parseRoutes(std::ifstream & ifstream, Server & server);
 	static Route* parseRoute(std::ifstream & ifstream, const std::string& name);
 	static void putFieldIntoRoute(Route & route, const std::string& key, const std::string& value);
-	static void finishInitialization(std::vector<Host> & hosts);
+	static void finishInitialization(std::vector<Server> & hosts);
 
 };
 

@@ -2,7 +2,7 @@
 #include "../IHTTPMessage.interface/Request.class/Request.hpp"
 #include "../IHTTPMessage.interface/Response.class/Response.class.hpp"
 
-Webserver::Webserver(std::vector<Host>* Hosts)
+Webserver::Webserver(std::vector<Server>* Hosts)
 {
 	hosts = Hosts;
 	error_ = 0;
@@ -15,7 +15,7 @@ Webserver::~Webserver() {}
 
 void Webserver::createSockets()
 {
-	std::vector<Host>::iterator it = hosts->begin();
+	std::vector<Server>::iterator it = hosts->begin();
 	for (; it != hosts->end(); it++)
 	{
 		if (it->isDefault())
@@ -50,7 +50,7 @@ void Webserver::socketReusable(int sock) {
 	}
 }
 
-void Webserver::socketBind(int sock, Host& host)
+void Webserver::socketBind(int sock, Server& host)
 {
 	error_ = fcntl(sock, F_SETFL, O_NONBLOCK);
 	if (error_ < 0) {
@@ -87,6 +87,7 @@ void Webserver::start()
 	for (;server_run;) {
 		pollStruct.makePoll(timeout_);
 		handleEvent();
+//		fflush(NULL);
 	}
 	pollStruct.cleanUpSockets();
 }
@@ -118,7 +119,7 @@ void Webserver::doAccept(int i)
 	int acceptFD;
 	Debug::Log("new connect");
 	int sock = pollStruct.getSocket(i);
-	Host serv = getServerByIndex(i);
+	Server serv = getServerByIndex(i);
 	acceptFD = accept(sock, serv.getSockAddr(), serv.getSockAddrSize());
 	if (acceptFD < 0) {
 		server_run = false;
@@ -128,11 +129,12 @@ void Webserver::doAccept(int i)
 	} else {
 		pollStruct.addConection(acceptFD);
 	}
+//	pollStruct.fds_[i].revents = 0;
 }
 
-Host &Webserver::getServerByIndex(int index)
+Server &Webserver::getServerByIndex(int index)
 {
-	std::vector<Host>::iterator it = hosts->begin();
+	std::vector<Server>::iterator it = hosts->begin();
 	for (; it != hosts->end(); it++)
 	{
 		if (it->getIndex() == index)

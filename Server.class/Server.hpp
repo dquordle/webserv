@@ -1,53 +1,59 @@
-#ifndef SERVER_HPP
-#define SERVER_HPP
+#ifndef WEB_SERVER_HOST_HPP
+#define WEB_SERVER_HOST_HPP
 
-#include <unistd.h>
-#include "UtilsServer/StructManager.hpp"
-#include "UtilsServer/PollStruct.hpp"
-#include "../Debug.class/Debug.hpp"
-#include "ServerException/ServerException.hpp"
-#include "../IHTTPMessage.interface/Request.class/Request.hpp"
-#include "../IHTTPMessage.interface/Response.class/Response.class.hpp"
-#include <fcntl.h>
+#include <vector>
+#include <map>
+#include <arpa/inet.h>
+#include "Route.hpp"
 
-class Server {
-private:
-	StructManager		structManager;
-	PollStruct		    PollStruct;
-	int					error_;
-	int 				socket_;
-	int					flagsOn_;
-	int                 timeout_;
-	int                 server_run;
-	int                 compress_;
-	std::string         buffer;
+class Server
+{
+
 public:
-	typedef StructManager::connection_struct	connection_struct;
-	typedef ServerException						ServerException;
-public:
-	explicit Server(const Server::connection_struct &);
+	Server(); ///////////////////////
+	~Server();
 
-	void start();
+	void 		setIP(const std::string& ip);
+	void 		setPort(const std::string& port);
+	void 		setServerName(const std::string& name);
+	void 		addError(const std::string & error);
+	void 		setMaxBodySize(const std::string & size);
+	void 		addRoute(Route & route);
+	void 		setAddress();
+	bool 		addAddress();
+	void 		setDefault(bool isDef);
+	void 		setSockAddr();
+	sockaddr*	getSockAddr();
+	socklen_t* 	getSockAddrSize();
+	std::string	getIp();
+	std::string	getPortStr();
+	void 		setIndex(int index);
+	int			getIndex() const;
+
+	bool isDefault() const;
+
 
 private:
-	void FDBeginner();
+	std::string					_ip;
+	std::string					_portStr;
+	int 						_port;
+	std::vector<std::string>	_server_name;
+	bool						_is_default;
+	std::map<int, std::string>	_errors;
+	int 						_max_body_size;
+	std::vector<Route>			_routes;
 
-	void doAccept();
+	std::string					_address;
 
-	int doRead(int &);
+	struct sockaddr_in			_sockaddrIn;
+	socklen_t					_size;
 
-	void doWrite (int &, const std::string &);
+	int 						_indexOfSocket;
 
-	void socketBind();
-
-	void socketListening();
-
-	void socketInit();
-
-	void socketReusable();
-
-	void handleConnection(int &);
-
+public:
+	static std::vector<std::string> addresses;
 };
+
+//std::vector<std::string> Server::addresses;
 
 #endif
