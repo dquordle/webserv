@@ -11,38 +11,37 @@ class Webserver
 {
 
 private:
-	PollStruct		    		pollStruct;
-	std::vector<Server>*		hosts;
-	int							error_;
-	bool 						server_run;
-	int                 		timeout_;
-	bool                		compress_;
-	std::string         		buffer;
-//	std::map<int, std::string>	indexMap;
+	PollStruct		    			pollStruct;
+	std::vector<ServersFamily>*		families;
+	int								error_;
+	bool 							server_run;
+	int                 			timeout_;
+	bool                			compress_;
+	std::string         			buffer;
+//	std::map<int, std::string>		indexMap;
 
 
 public:
-	explicit Webserver(std::vector<Server>* Hosts);
+	explicit Webserver(std::vector<ServersFamily>* Families);
 	~Webserver();
 	void start();
 
 private:
-	void createSockets();
-	int socketInit();
-	void socketReusable(int sock);
-	void socketBind(int sock, Server& host);
-	void socketListening(int sock);
+	void	createSockets();
+	int		socketInit();
+	void	socketReusable(int sock);
+	void	socketBind(int sock, ServersFamily& family);
+	void	socketListening(int sock);
 
-	void handleEvent();
+	void	handleEvent();
 
-	void doAccept(int i);
-	Server& getServerByIndex(int index);
-	void handleConnection(int i);
+	void	doAccept(int i);
+	Server&	getServerByIndex(int index);
+	void	handleConnection(int i);
 
-	int doRead(int socket);
+	int		doRead(int socket);
 
-	void doWrite (int socket, const std::string & buf);
-
+	void	doWrite(int socket, const std::string & buf);
 };
 
 

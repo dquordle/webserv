@@ -5,13 +5,13 @@
 #include <map>
 #include <arpa/inet.h>
 #include "Route.hpp"
+#include "../Configs/Configuration.hpp"
 
 class Server
 {
 
 public:
-	Server(); ///////////////////////
-	~Server();
+	Server();
 
 	void 		setIP(const std::string& ip);
 	void 		setPort(const std::string& port);
@@ -19,18 +19,11 @@ public:
 	void 		addError(const std::string & error);
 	void 		setMaxBodySize(const std::string & size);
 	void 		addRoute(Route & route);
-	void 		setAddress();
-	bool 		addAddress();
 	void 		setDefault(bool isDef);
-	void 		setSockAddr();
-	sockaddr*	getSockAddr();
-	socklen_t* 	getSockAddrSize();
 	std::string	getIp();
 	std::string	getPortStr();
-	void 		setIndex(int index);
-	int			getIndex() const;
 
-	bool isDefault() const;
+	bool		isDefault() const;
 
 
 private:
@@ -42,18 +35,6 @@ private:
 	std::map<int, std::string>	_errors;
 	int 						_max_body_size;
 	std::vector<Route>			_routes;
-
-	std::string					_address;
-
-	struct sockaddr_in			_sockaddrIn;
-	socklen_t					_size;
-
-	int 						_indexOfSocket;
-
-public:
-	static std::vector<std::string> addresses;
 };
-
-//std::vector<std::string> Server::addresses;
 
 #endif

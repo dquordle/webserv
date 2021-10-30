@@ -1,10 +1,9 @@
 #include "Parser.hpp"
 
-std::vector<Server> Parser::parse(const std::string& config)
+std::vector<ServersFamily> Parser::parse(const std::string& config)
 {
 	std::ifstream ifs(config);
-	std::vector<Server> hosts;
-	std::vector<ServersFamily> family;
+	std::vector<ServersFamily> families;
 
 	if (!ifs.good())
 	{
@@ -15,25 +14,27 @@ std::vector<Server> Parser::parse(const std::string& config)
 	while (nextLine == "server{")
 	{
 			Server *server = parseServer(ifs);
-			hosts.push_back(*server);
+			putServerToFamily(&families, *server);
 			delete(server);
 			nextLine = superGetNextLine(ifs);
 	}
 	ifs.close();
-	if (hosts.empty())
+	if (families.empty())
 		exit(1);
-	finishInitialization(hosts);
-	return hosts;
+	return families;
 }
 
 void Parser::putServerToFamily(std::vector<ServersFamily> *families, Server &server)
 {
+	std::string address = server.getIp() + ":" + server.getPortStr();
 	std::vector<ServersFamily>::iterator it = (*families).begin();
 	for (;it != (*families).end(); it++)
 	{
-		std::string address = server.getIp() + ":" + server.getPortStr();
 		if (it->getAddress() == address)
+		{
 			it->addServer(server);
+			return;
+		}
 	}
 	ServersFamily family(server.getIp(), server.getPortStr());
 	server.setDefault(true);
@@ -48,10 +49,7 @@ Server * Parser::parseServer(std::ifstream & ifs)
 	while (!str.empty())
 	{
 		if (str == "routes{")
-		{
-			//////// защититься от нескольких (если надо)
 			parseRoutes(ifs, *host);
-		}
 		else if (str == "}")
 		{
 			return host;
@@ -166,17 +164,4 @@ std::string Parser::superGetNextLine(std::ifstream & ifs)
 	}
 	return str;
 }
-
-void Parser::finishInitialization(std::vector<Server> & hosts)
-{
-	std::vector<Server>::iterator it = hosts.begin();
-	for (; it != hosts.end(); it++)
-	{
-		it->setAddress();
-		bool isDef = it->addAddress();
-		it->setDefault(isDef);
-		it->setSockAddr();
-	}
-}
-
 

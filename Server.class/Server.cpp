@@ -1,19 +1,11 @@
 #include "Server.hpp"
 
-std::vector<std::string> Server::addresses;
-
 Server::Server()
 {
-	_ip = "127.0.0.1";
-	_port = 80;
-	_portStr = "80";
+	_ip = DEFAULT_IP;
+	_portStr = DEFAULT_PORT_STR;
+	sscanf(_portStr.c_str(), "%d", &_port);
 	_is_default = false;
-	_indexOfSocket = -1;
-}
-
-Server::~Server()
-{
-
 }
 
 void Server::setIP(const std::string& ip)
@@ -79,59 +71,14 @@ void Server::addRoute(Route &route)
 	_routes.push_back(route);
 }
 
-void Server::setAddress()
-{
-	_address = _ip + ":" + _portStr;
-}
-
 void Server::setDefault(bool isDef)
 {
 	_is_default = isDef;
 }
 
-bool Server::addAddress()
-{
-	std::vector<std::string>::iterator it = addresses.begin();
-	for (; it != addresses.end(); it++)
-	{
-		if (*it == _address)
-			return false;
-	}
-	addresses.push_back(_address);
-	return true;
-}
-
 bool Server::isDefault() const
 {
 	return _is_default;
-}
-
-void Server::setSockAddr()
-{
-	_sockaddrIn.sin_family = AF_INET;
-	_sockaddrIn.sin_port = htons(_port);
-	_sockaddrIn.sin_addr.s_addr = inet_addr(_ip.c_str());
-	_size = sizeof(_sockaddrIn);
-}
-
-sockaddr* Server::getSockAddr()
-{
-	return reinterpret_cast<sockaddr *>(&_sockaddrIn);
-}
-
-socklen_t* Server::getSockAddrSize()
-{
-	return &_size;
-}
-
-void Server::setIndex(int index)
-{
-	_indexOfSocket = index;
-}
-
-int Server::getIndex() const
-{
-	return _indexOfSocket;
 }
 
 std::string Server::getIp()

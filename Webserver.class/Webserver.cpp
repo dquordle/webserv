@@ -2,9 +2,9 @@
 #include "../IHTTPMessage.interface/Request.class/Request.hpp"
 #include "../IHTTPMessage.interface/Response.class/Response.class.hpp"
 
-Webserver::Webserver(std::vector<Server>* Hosts)
+Webserver::Webserver(std::vector<ServersFamily>* Families)
 {
-	hosts = Hosts;
+	families = Families;
 	error_ = 0;
 	server_run = true;
 	compress_ = true;
@@ -15,18 +15,14 @@ Webserver::~Webserver() {}
 
 void Webserver::createSockets()
 {
-	std::vector<Server>::iterator it = hosts->begin();
-	for (; it != hosts->end(); it++)
+	std::vector<ServersFamily>::iterator it = families->begin();
+	for (; it != families->end(); it++)
 	{
-		if (it->isDefault())
-		{
-			int sock = socketInit();
-			socketReusable(sock);
-			socketBind(sock, *it);
-			socketListening(sock);
-			int index = pollStruct.addListener(sock);
-			it->setIndex(index);
-		}
+		int sock = socketInit();
+		socketReusable(sock);
+		socketBind(sock, *it);
+		socketListening(sock);
+		pollStruct.addListener(sock);
 	}
 }
 
@@ -50,7 +46,7 @@ void Webserver::socketReusable(int sock) {
 	}
 }
 
-void Webserver::socketBind(int sock, Server& host)
+void Webserver::socketBind(int sock, ServersFamily& family)
 {
 	error_ = fcntl(sock, F_SETFL, O_NONBLOCK);
 	if (error_ < 0) {
@@ -60,8 +56,7 @@ void Webserver::socketBind(int sock, Server& host)
 		exit(1);
 	}
 
-//	error_ = bind(sock, reinterpret_cast<sockaddr *>((structManager.getStruct())), *structManager.getSize()); ////
-	error_ = bind(sock, host.getSockAddr(), *(host.getSockAddrSize()));
+	error_ = bind(sock, family.getSockAddr(), *(family.getSockAddrSize()));
 	if (error_ == -1) {
 		// close(sock);
 		pollStruct.cleanUpSockets();
@@ -73,7 +68,7 @@ void Webserver::socketBind(int sock, Server& host)
 void Webserver::socketListening(int sock) {
 	error_ = listen(sock, 10);
 	if (error_ == -1) {
-		// close(sock);
+//		close(sock);
 		pollStruct.cleanUpSockets();
 //		throw Server::ServerException("no listen");
 		exit(1);
@@ -87,7 +82,6 @@ void Webserver::start()
 	for (;server_run;) {
 		pollStruct.makePoll(timeout_);
 		handleEvent();
-//		fflush(NULL);
 	}
 	pollStruct.cleanUpSockets();
 }
@@ -107,7 +101,7 @@ void Webserver::handleEvent()
 		else {
 			handleConnection(i);
 		}
-		if (compress_) {
+		if (compress_) {  ///////////////////////Peredelat'
 			compress_ = false;
 			pollStruct.compress();
 		}
@@ -119,8 +113,8 @@ void Webserver::doAccept(int i)
 	int acceptFD;
 	Debug::Log("new connect");
 	int sock = pollStruct.getSocket(i);
-	Server serv = getServerByIndex(i);
-	acceptFD = accept(sock, serv.getSockAddr(), serv.getSockAddrSize());
+	ServersFamily family = (*families)[i];
+	acceptFD = accept(sock, family.getSockAddr(), family.getSockAddrSize());
 	if (acceptFD < 0) {
 		server_run = false;
 		Debug::Log("no accept", true);
@@ -131,17 +125,17 @@ void Webserver::doAccept(int i)
 	}
 //	pollStruct.fds_[i].revents = 0;
 }
-
-Server &Webserver::getServerByIndex(int index)
-{
-	std::vector<Server>::iterator it = hosts->begin();
-	for (; it != hosts->end(); it++)
-	{
-		if (it->getIndex() == index)
-			return *it;
-	}
-	exit(1);
-}
+//
+//Server &Webserver::getServerByIndex(int index)
+//{
+//	std::vector<Server>::iterator it = hosts->begin();
+//	for (; it != hosts->end(); it++)
+//	{
+//		if (it->getIndex() == index)
+//			return *it;
+//	}
+//	exit(1);
+//}
 
 void Webserver::handleConnection(int i)
 {

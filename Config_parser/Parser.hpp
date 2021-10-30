@@ -8,7 +8,7 @@
 class Parser
 {
 public:
-	static std::vector<Server> parse(const std::string& config);
+	static std::vector<ServersFamily> parse(const std::string& config);
 
 private:
 	static std::string superGetNextLine(std::ifstream & ifs);
@@ -18,8 +18,6 @@ private:
 	static void parseRoutes(std::ifstream & ifstream, Server & server);
 	static Route* parseRoute(std::ifstream & ifstream, const std::string& name);
 	static void putFieldIntoRoute(Route & route, const std::string& key, const std::string& value);
-	static void finishInitialization(std::vector<Server> & hosts);
-
 };
 
 

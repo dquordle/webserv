@@ -1,10 +1,11 @@
 #include "ServersFamily.hpp"
 
-ServersFamily::ServersFamily(const std::string& ip, std::string portStr)
+ServersFamily::ServersFamily(const std::string& ip, const std::string& portStr)
 {
 	int port;
 	sscanf(portStr.c_str(), "%d", &port);
 
+	memset(&_sockaddrIn, 0, sizeof(_sockaddrIn));
 	_sockaddrIn.sin_family = AF_INET;
 	_sockaddrIn.sin_port = htons(port);
 	_sockaddrIn.sin_addr.s_addr = inet_addr(ip.c_str());
@@ -23,7 +24,12 @@ void ServersFamily::addServer(const Server &server)
 	_servers.push_back(server);
 }
 
-void ServersFamily::setSocket(int socket)
+sockaddr* ServersFamily::getSockAddr()
 {
-	_socket = socket;
+	return reinterpret_cast<sockaddr *>(&_sockaddrIn);
+}
+
+socklen_t* ServersFamily::getSockAddrSize()
+{
+	return &_size;
 }

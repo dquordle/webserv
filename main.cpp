@@ -8,8 +8,8 @@ int main(int argc, char** argv) {
 		conf_path = argv[1];
 	else
 		return 1;
-	std::vector<Server> hosts = Parser::parse(conf_path);
-	Webserver *webserver = new Webserver(&hosts);
+	std::vector<ServersFamily> families = Parser::parse(conf_path);
+	Webserver *webserver = new Webserver(&families);
 	webserver->start();
 	return 0;
 }
