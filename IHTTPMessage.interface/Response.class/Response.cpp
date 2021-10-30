@@ -209,7 +209,13 @@ void Response::getFolder(std::string & path) {
             }
             _body.append("</pre><hr></body>\n</html>\n");
         } else {
-            getFile(path.append("/index.html"));
+            if (_route->getIndexFile().empty())
+                _statusCode = 403;
+            else {
+                if (path.find(path.length() - 1, '/') == std::string::npos)
+                    path.append("/");
+                getFile(path.append(_route->getIndexFile()));
+            }
             if (_statusCode == 404)
                 _statusCode = 403;
         }
