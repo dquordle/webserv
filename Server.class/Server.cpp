@@ -92,7 +92,6 @@ int Server::doRead(int &socket) {
         return 1;
     } else {
         buffer = std::string(buf);
-        std::cout << buf;
     }
     return 0;
 }
