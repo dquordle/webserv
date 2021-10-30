@@ -1,7 +1,6 @@
 #ifndef WEB_SERVER_ROUTE_HPP
 #define WEB_SERVER_ROUTE_HPP
 
-//#include <iostream>
 #include <vector>
 #include "../IHTTPMessage.interface/Methods.hpp"
 

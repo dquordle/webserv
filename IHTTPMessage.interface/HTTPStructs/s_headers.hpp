@@ -31,7 +31,7 @@ struct s_headers {
 	}
 
     bool isHostProvided() const {
-        if (headers.find("Host") != headers.end())
+        if (headers.find("Server") != headers.end())
             return true;
         return false;
     }

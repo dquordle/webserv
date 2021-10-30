@@ -1,6 +1,4 @@
-#include "Server.class/Server.hpp"
-#include "Config_parser/Host.hpp"
-#include "Config_parser/Parser.hpp"
+#include "Webserver.class/Webserver.hpp"
 
 int main(int argc, char** argv) {
 	std::string conf_path;
@@ -10,11 +8,8 @@ int main(int argc, char** argv) {
 		conf_path = argv[1];
 	else
 		return 1;
-	//	lets get this config parsed
-	std::vector<Host> hosts = Parser::parse(conf_path);
-
-	Server::connection_struct connectionStruct = StructManager::connection_struct(1111, "127.0.0.1");
-	Server server(connectionStruct, &hosts[1]);
-	server.start();
+	std::vector<ServersFamily> families = Parser::parse(conf_path);
+	Webserver *webserver = new Webserver(&families);
+	webserver->start();
 	return 0;
 }

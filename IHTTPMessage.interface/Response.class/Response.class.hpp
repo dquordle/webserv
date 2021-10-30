@@ -13,7 +13,7 @@
 #include <sys/param.h>
 #include <dirent.h>
 #include <cstring>
-#include "../../Config_parser/Host.hpp"
+#include "../../Server.class/Server.hpp"
 
 class Response : public IHTTPMessage {
 private:
@@ -21,11 +21,11 @@ private:
     std::string _response;
     std::string _statusLine;
     std::string _body;
-    Host *      _host;
+    Server *    _server;
     Route *     _route;
 
 public:
-    Response(int statusCode, const s_startline &startline, const s_headers &headers, const s_bodies &bodies, Host *);
+    Response(int statusCode, const s_startline &startline, const s_headers &headers, const s_bodies &bodies, Server * serv);
 
 const std::string &getResponse() const;
 

@@ -1,54 +1,45 @@
-#ifndef SERVER_HPP
-#define SERVER_HPP
+#ifndef WEB_SERVER_HOST_HPP
+#define WEB_SERVER_HOST_HPP
 
-#include <unistd.h>
-#include "UtilsServer/StructManager.hpp"
-#include "UtilsServer/PollStruct.hpp"
-#include "../Debug.class/Debug.hpp"
-#include "ServerException/ServerException.hpp"
-#include "../IHTTPMessage.interface/Request.class/Request.hpp"
-#include "../IHTTPMessage.interface/Response.class/Response.class.hpp"
-#include <fcntl.h>
-#include "../Config_parser/Host.hpp"
+#include <vector>
+#include <map>
+#include <arpa/inet.h>
+#include "Route.hpp"
+#include "../Configs/Configuration.hpp"
 
-class Server {
-private:
-	StructManager		structManager;
-	PollStruct		    _PollStruct;
-	int					_error;
-	int 				_socket;
-	int                 _timeout;
-	int                 _server_run;
-	int                 _compress;
-	std::string         buffer;
-	Host *				_host;
+class Server
+{
+
 public:
-	typedef StructManager::connection_struct	connection_struct;
-	typedef ServerException						ServerException;
-public:
-	explicit Server(const Server::connection_struct &, Host *);
+	Server();
 
-	void start();
+	void 						setIP(const std::string& ip);
+	void 						setPort(const std::string& port);
+	void 						setServerName(const std::string& name);
+	void 						addError(const std::string & error);
+	void 						setMaxBodySize(const std::string & size);
+	void 						addRoute(Route & route);
+	void 						setDefault(bool isDef);
+	std::string					getIp();
+	std::string					getPortStr();
+	std::vector<std::string>	getNames();
+
+	bool		isDefault() const;
+
+	Route * chooseRoute(const std::string & target);
+
+	std::string isNonDefaultErrorPage(int statusCode) const;
+
 
 private:
-	void FDBeginner();
-
-	void doAccept();
-
-	int doRead(int &);
-
-	void doWrite (int &, const std::string &);
-
-	void socketBind();
-
-	void socketListening();
-
-	void socketInit();
-
-	void socketReusable();
-
-	void handleConnection(int &);
-
+	std::string					_ip;
+	std::string					_portStr;
+	int 						_port;
+	std::vector<std::string>	_server_names;
+	bool						_is_default;
+	std::map<int, std::string>	_errors;
+	int 						_max_body_size;
+	std::vector<Route>			_routes;
 };
 
 #endif

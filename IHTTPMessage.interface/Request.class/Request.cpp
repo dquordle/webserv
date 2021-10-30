@@ -74,7 +74,7 @@ void Request::makeStartline() {
  * checks if there whitespace between the header field-name and colon or multiple header fields (according to rfc7230 3.2.4)
  * and sets __statusCode to 400 in that case
  *
- * at the end of function checks if Host field-name is provided (according to rfc7230 5.4),
+ * at the end of function checks if Server field-name is provided (according to rfc7230 5.4),
  * sets 400 in __statusCode otherwise
  */
 

@@ -1,12 +1,12 @@
 #include "Response.class.hpp"
 #include <fstream>
 
-Response::Response(int statusCode, const s_startline &startline, const s_headers &headers, const s_bodies &bodies, Host * host) {
+Response::Response(int statusCode, const s_startline &startline, const s_headers &headers, const s_bodies &bodies, Server * server) {
     _s_startline = startline;
     _requestHeaders = headers;
     _s_bodies = bodies;
     _statusCode = statusCode;
-    _host = host;
+	_server = server;
 //    TODO: может переенести вставку Referer
     _s_startline.target.insert(0, _requestHeaders.getReferer());
     setAttributes();
@@ -45,32 +45,10 @@ void Response::makeHeaders() {
 //        _s_headers.headers.insert(std::pair<std::string, std::string>("Allow:","GET, POST, DELETE\r\n"));
 }
 
-Route * Host::chooseRoute(const std::string & target) {
-    std::vector<Route>::iterator it = _routes.begin();
-    std::vector<Route>::iterator ite = _routes.end();
-    int maxdepth = -1;
-    int currentdepth = -1;
-    Route ref = *it;
-
-    for (; it != ite; ++it) {
-        if (Route::findTarget((*it), target)) {
-            currentdepth = Route::nameDepth(*it);
-            if (currentdepth > maxdepth)
-            {
-                maxdepth = currentdepth;
-                ref = *it;
-            }
-        }
-    }
-    if (maxdepth == -1)
-        return nullptr;
-    return new Route(ref);
-}
-
 void Response::makeBodies() {
     if (_statusCode == 200)
     {
-        _route = _host->chooseRoute(_s_startline.target);
+        _route = _server->chooseRoute(_s_startline.target);
         if (_route == nullptr) {
             _statusCode = 404;
             setErrorBody();
@@ -137,7 +115,7 @@ void Response::setErrorBody() {
 //    TODO: подумать про самопроверку
     std::string err;
 
-    err = _host->isNonDefaultErrorPage(_statusCode);
+    err = _server->isNonDefaultErrorPage(_statusCode);
     if (!err.empty()) {
         err.erase(0,1);
 

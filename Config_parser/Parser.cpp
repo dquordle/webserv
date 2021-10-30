@@ -1,9 +1,9 @@
 #include "Parser.hpp"
 
-std::vector<Host> Parser::parse(const std::string& config)
+std::vector<ServersFamily> Parser::parse(const std::string& config)
 {
 	std::ifstream ifs(config);
-	std::vector<Host> hosts;
+	std::vector<ServersFamily> families;
 
 	if (!ifs.good())
 	{
@@ -13,29 +13,43 @@ std::vector<Host> Parser::parse(const std::string& config)
 	std::string nextLine = superGetNextLine(ifs);
 	while (nextLine == "server{")
 	{
-			Host *host = parseServer(ifs);
-			hosts.push_back(*host);
-			delete(host);
+			Server *server = parseServer(ifs);
+			putServerToFamily(&families, *server);
+			delete(server);
 			nextLine = superGetNextLine(ifs);
 	}
 	ifs.close();
-	if (hosts.empty())
+	if (families.empty())
 		exit(1);
-	return hosts;
+	return families;
 }
 
-
-Host * Parser::parseServer(std::ifstream & ifs)
+void Parser::putServerToFamily(std::vector<ServersFamily> *families, Server &server)
 {
-	Host *host = new Host();
+	std::string address = server.getIp() + ":" + server.getPortStr();
+	std::vector<ServersFamily>::iterator it = (*families).begin();
+	for (;it != (*families).end(); it++)
+	{
+		if (it->getAddress() == address)
+		{
+			it->addServer(server);
+			return;
+		}
+	}
+	ServersFamily family(server.getIp(), server.getPortStr());
+	server.setDefault(true);
+	family.addServer(server);
+	families->push_back(family);
+}
+
+Server * Parser::parseServer(std::ifstream & ifs)
+{
+	Server *host = new Server();
 	std::string str = superGetNextLine(ifs);
 	while (!str.empty())
 	{
 		if (str == "routes{")
-		{
-			//////// защититься от нескольких (если надо)
 			parseRoutes(ifs, *host);
-		}
 		else if (str == "}")
 		{
 			return host;
@@ -52,12 +66,10 @@ Host * Parser::parseServer(std::ifstream & ifs)
 		}
 		str = superGetNextLine(ifs);
 	}
-
-//	return *host;
 	exit(1);
 }
 
-void Parser::putFieldIntoHost(Host & host, const std::string& key, const std::string& value)
+void Parser::putFieldIntoHost(Server & host, const std::string& key, const std::string& value)
 {
 	if (key == "host")
 		host.setIP(value);
@@ -73,7 +85,7 @@ void Parser::putFieldIntoHost(Host & host, const std::string& key, const std::st
 		exit(1);
 }
 
-void Parser::parseRoutes(std::ifstream &ifs, Host &host)
+void Parser::parseRoutes(std::ifstream &ifs, Server &host)
 {
 	std::string str = superGetNextLine(ifs);
 	if (str.empty())
@@ -150,8 +162,6 @@ std::string Parser::superGetNextLine(std::ifstream & ifs)
 		if (!str.empty())
 			break;
 	}
-
 	return str;
 }
-
 
