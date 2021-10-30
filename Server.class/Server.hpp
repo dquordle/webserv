@@ -13,24 +13,29 @@ class Server
 public:
 	Server();
 
-	void 		setIP(const std::string& ip);
-	void 		setPort(const std::string& port);
-	void 		setServerName(const std::string& name);
-	void 		addError(const std::string & error);
-	void 		setMaxBodySize(const std::string & size);
-	void 		addRoute(Route & route);
-	void 		setDefault(bool isDef);
-	std::string	getIp();
-	std::string	getPortStr();
+	void 						setIP(const std::string& ip);
+	void 						setPort(const std::string& port);
+	void 						setServerName(const std::string& name);
+	void 						addError(const std::string & error);
+	void 						setMaxBodySize(const std::string & size);
+	void 						addRoute(Route & route);
+	void 						setDefault(bool isDef);
+	std::string					getIp();
+	std::string					getPortStr();
+	std::vector<std::string>	getNames();
 
 	bool		isDefault() const;
+
+	Route * chooseRoute(const std::string & target);
+
+	std::string isNonDefaultErrorPage(int statusCode) const;
 
 
 private:
 	std::string					_ip;
 	std::string					_portStr;
 	int 						_port;
-	std::vector<std::string>	_server_name;
+	std::vector<std::string>	_server_names;
 	bool						_is_default;
 	std::map<int, std::string>	_errors;
 	int 						_max_body_size;

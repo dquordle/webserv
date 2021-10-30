@@ -123,7 +123,6 @@ void Webserver::doAccept(int i)
 	} else {
 		pollStruct.addConection(acceptFD);
 	}
-//	pollStruct.fds_[i].revents = 0;
 }
 //
 //Server &Webserver::getServerByIndex(int index)
@@ -144,7 +143,8 @@ void Webserver::handleConnection(int i)
 	////////////////////////
 	Request req(buffer);
 //	req.getHeaders().headers;
-	Response resp(req.getStatusCode(), req.getStartLine(), req.getHeaders(), req.getBodies());
+	Server serv = (*families)[0].getServerByName("HOST FIELD FROM REQUEST HEADER");
+	Response resp(req.getStatusCode(), req.getStartLine(), req.getHeaders(), req.getBodies(), &serv);
 	doWrite(socket, resp.getResponse());
 	if (closeConnection) {
 		pollStruct.closeConnection(i);

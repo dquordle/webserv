@@ -33,3 +33,19 @@ socklen_t* ServersFamily::getSockAddrSize()
 {
 	return &_size;
 }
+
+Server &ServersFamily::getServerByName(std::string name)
+{
+	std::vector<Server>::iterator it = _servers.begin();
+	for (; it != _servers.end(); it++)
+	{
+		std::vector<std::string> names =  it->getNames();
+		std::vector<std::string>::iterator iter = names.begin();
+		for (; iter != names.end(); iter++)
+		{
+			if (*iter == name)
+				return *it;
+		}
+	}
+	return _servers[0];
+}

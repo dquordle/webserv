@@ -34,12 +34,12 @@ void Server::setServerName(const std::string & name)
 	{
 		size_t count = pos - prev_pos;
 		std::string serverName = name.substr(prev_pos, count);
-		_server_name.push_back(serverName);
+		_server_names.push_back(serverName);
 		prev_pos = pos + 1;
 		pos = name.find(',', prev_pos);
 	}
 	std::string serverName = name.substr(prev_pos, pos);
-	_server_name.push_back(serverName);
+	_server_names.push_back(serverName);
 }
 
 void Server::addError(const std::string & error)
@@ -91,3 +91,38 @@ std::string Server::getPortStr()
 	return _portStr;
 }
 
+std::string Server::isNonDefaultErrorPage(int statusCode) const {
+	std::map<int, std::string>::const_iterator it;
+
+	it = _errors.find(statusCode);
+	if (it == _errors.end())
+		return std::string();
+	return it->second;
+}
+
+Route * Server::chooseRoute(const std::string & target) {
+	std::vector<Route>::iterator it = _routes.begin();
+	std::vector<Route>::iterator ite = _routes.end();
+	int maxdepth = -1;
+	int currentdepth = -1;
+	Route ref = *it;
+
+	for (; it != ite; ++it) {
+		if (Route::findTarget((*it), target)) {
+			currentdepth = Route::nameDepth(*it);
+			if (currentdepth > maxdepth)
+			{
+				maxdepth = currentdepth;
+				ref = *it;
+			}
+		}
+	}
+	if (maxdepth == -1)
+		return nullptr;
+	return new Route(ref);
+}
+
+std::vector<std::string> Server::getNames()
+{
+	return _server_names;
+}

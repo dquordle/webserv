@@ -16,6 +16,7 @@ public:
 	void		addServer(const Server & server);
 	sockaddr*	getSockAddr();
 	socklen_t* 	getSockAddrSize();
+	Server&		getServerByName(std::string name);
 };
 
 

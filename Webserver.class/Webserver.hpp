@@ -36,7 +36,6 @@ private:
 	void	handleEvent();
 
 	void	doAccept(int i);
-	Server&	getServerByIndex(int index);
 	void	handleConnection(int i);
 
 	int		doRead(int socket);
