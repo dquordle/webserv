@@ -42,6 +42,24 @@ struct s_headers {
 	    return false;
 	}
 
+	const std::string getReferer() {
+	    std::map<std::string, std::string>::const_iterator it;
+	    std::map<std::string, std::string>::const_iterator delimetr;
+	    std::string ref;
+
+	    size_t pos;
+
+	    it = headers.find("Referer");
+	    delimetr = headers.find("Host");
+	    if (it != headers.end()) {
+	        pos = it->second.find(delimetr->second) + 1;
+	        ref = (*it).second;
+	        ref.erase(0, 7);
+            ref.erase(0, pos + delimetr->second.length());
+	    }
+        return ref;
+	}
+
     const std::string getHeaders() const {
         std::map<std::string, std::string>::const_iterator it = headers.begin();
         std::map<std::string, std::string>::const_iterator ite = headers.end();
