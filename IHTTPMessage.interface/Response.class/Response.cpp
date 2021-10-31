@@ -8,7 +8,7 @@ Response::Response(int statusCode, const s_startline &startline, const s_headers
     _statusCode = statusCode;
 	_server = server;
 //    TODO: может переенести вставку Referer
-    _s_startline.target.insert(0, _requestHeaders.getReferer());
+_s_startline.target.insert(0, _requestHeaders.getReferer(_s_startline.target));
     setAttributes();
     createResponse();
 }
@@ -20,7 +20,7 @@ Response::Response(int statusCode, const s_startline &startline, const s_headers
 void Response::makeStartline() {
     _statusLine = "HTTP/1.1 ";
 
-    std::string const arrStatus[] = {"200 OK", "400 Bad Request", "403 Forbidden", "404 Not Found", "405 Method Not Allowed",
+    std::string const arrStatus[] = {"200 OK", "301 Moved Permanently", "400 Bad Request", "403 Forbidden", "404 Not Found", "405 Method Not Allowed",
                                      "501 Not Implemented", "505 HTTP Version Not Supported"};
     std::ostringstream ss;
     ss << _statusCode;
@@ -54,6 +54,16 @@ void Response::makeBodies() {
             setErrorBody();
             return;
         }
+        else {
+            if (!_route->getRedirection().empty())
+            {
+                _statusCode = 301;
+                setLocation();
+                setErrorBody();
+                return;
+            }
+            rewriteTargetIfRoot();
+        }
         if (_s_startline.method == "GET")
             doGetMethod();
         else if (_s_startline.method == "POST")
@@ -63,6 +73,19 @@ void Response::makeBodies() {
     }
     if (_statusCode != 200)
         setErrorBody();
+}
+
+void Response::rewriteTargetIfRoot() {
+    std::string root = _route->getDirectory();
+
+    if (!root.empty()) {
+        std::string routeName;
+
+        routeName = _route->getName();
+        if (routeName[routeName.length() - 1] != '/')
+            _s_startline.target.erase(0, routeName.length());
+        _s_startline.target.insert(0, root);
+    }
 }
 
 /**
@@ -107,6 +130,10 @@ void Response::setServerName() {
     _s_headers.headers.insert(std::pair<std::string, std::string>("Server-Name", "╮(￣_￣)╭"));
 }
 
+void Response::setLocation() {
+    _s_headers.headers.insert(std::pair<std::string, std::string>("Location", _route->getRedirection()));
+}
+
 /**
  * depending on status code fill body with error message from errorResponse.hpp
  */
@@ -137,6 +164,9 @@ void Response::setErrorBody() {
 
 void Response::setDefaultError() {
     switch (_statusCode) {
+        case 301:
+            _body = error_301;
+            break;
         case 400:
             _body = error_400;
             break;
@@ -197,19 +227,33 @@ void Response::getFolder(std::string & path) {
 
     if ((dir = opendir(path.c_str())) != NULL) {
         if (_route->isAutoindexOn()) {
-            _body = "<html>\n<head><title>Index of /</title></head>\n<body bgcolor=\"white\">\n<h1>Index of /</h1><hr><pre><a href=\"../\">../</a>\n";
+            _body = "<html>\n<head><title>Index of ";
+            _body.append(_s_startline.target);
+            _body.append("</title></head>\n<body bgcolor=\"white\">\n<h1>Index of ");
+            _body.append(_s_startline.target);
+            _body.append("</h1><hr><pre><a href=\"../\">../</a>\n");
             while ((ent = readdir(dir)) != NULL) {
                 if (std::strcmp(ent->d_name, ".") == 0 || std::strcmp(ent->d_name, "..") == 0)
                     continue;
                 _body.append("<a href=\"");
                 _body.append(ent->d_name);
+                if (ent->d_type == DT_DIR)
+                    _body.append("/");
                 _body.append("\">");
                 _body.append(ent->d_name);
+                if (ent->d_type == DT_DIR)
+                    _body.append("/");
                 _body.append("</a>\n");
             }
             _body.append("</pre><hr></body>\n</html>\n");
         } else {
-            getFile(path.append("/index.html"));
+            if (_route->getIndexFile().empty())
+                _statusCode = 403;
+            else {
+                if (path.find(path.length() - 1, '/') == std::string::npos)
+                    path.append("/");
+                getFile(path.append(_route->getIndexFile()));
+            }
             if (_statusCode == 404)
                 _statusCode = 403;
         }
@@ -258,11 +302,10 @@ void Response::doPostMethod() {
 
 void Response::doDeleteMethod() {
 //    TODO: decide how delete works with folders
-//    if (_s_startline.target == "/") {
-//        _statusCode = 405;
-//        _s_headers.headers.insert(std::pair<std::string, std::string>("Allow:","GET\r\n"));
-//    }
-    std::string filename = _s_startline.target;
+    if (_s_startline.target == "/")
+        _statusCode = 405;
+
+        std::string filename = _s_startline.target;
 
     if (remove((filename.erase(0, 1)).c_str()) == 0) {
         _statusCode = 200;

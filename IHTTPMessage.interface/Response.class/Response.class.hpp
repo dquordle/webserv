@@ -35,11 +35,13 @@ private:
     virtual void makeBodies();
 
     void createResponse();
+    void rewriteTargetIfRoot();
 
     void setAttributes();
     void setDate();
     void setContentLength();
     void setContentType();
+    void setLocation();
     void setServerName();
 
     void setDefaultError();

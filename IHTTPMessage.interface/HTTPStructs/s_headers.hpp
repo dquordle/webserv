@@ -31,7 +31,7 @@ struct s_headers {
 	}
 
     bool isHostProvided() const {
-        if (headers.find("Server") != headers.end())
+        if (headers.find("Host") != headers.end())
             return true;
         return false;
     }
@@ -42,7 +42,7 @@ struct s_headers {
 	    return false;
 	}
 
-	const std::string getReferer() {
+	const std::string getReferer(std::string target) {
 	    std::map<std::string, std::string>::const_iterator it;
 	    std::map<std::string, std::string>::const_iterator delimetr;
 	    std::string ref;
@@ -56,6 +56,8 @@ struct s_headers {
 	        ref = (*it).second;
 	        ref.erase(0, 7);
             ref.erase(0, pos + delimetr->second.length());
+            if (ref == "/" || ref.find(target) != std::string::npos || target.find(ref) != std::string::npos)
+                ref = "";
 	    }
         return ref;
 	}
