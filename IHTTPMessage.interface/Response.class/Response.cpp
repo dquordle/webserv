@@ -8,7 +8,7 @@ Response::Response(int statusCode, const s_startline &startline, const s_headers
     _statusCode = statusCode;
 	_server = server;
 //    TODO: может переенести вставку Referer
-    _s_startline.target.insert(0, _requestHeaders.getReferer());
+_s_startline.target.insert(0, _requestHeaders.getReferer(_s_startline.target));
     setAttributes();
     createResponse();
 }
@@ -172,6 +172,7 @@ void Response::doGetMethod() {
 //TODO: переписать target если directory
 // моежт не надо создавать path а просто переписать target
 
+std::cout << path << std::endl;
     path.erase(0, 1);
     if (path.empty()) {
         char buf[MAXPATHLEN];
@@ -197,14 +198,22 @@ void Response::getFolder(std::string & path) {
 
     if ((dir = opendir(path.c_str())) != NULL) {
         if (_route->isAutoindexOn()) {
-            _body = "<html>\n<head><title>Index of /</title></head>\n<body bgcolor=\"white\">\n<h1>Index of /</h1><hr><pre><a href=\"../\">../</a>\n";
+            _body = "<html>\n<head><title>Index of ";
+            _body.append(_s_startline.target);
+            _body.append("</title></head>\n<body bgcolor=\"white\">\n<h1>Index of ");
+            _body.append(_s_startline.target);
+            _body.append("</h1><hr><pre><a href=\"../\">../</a>\n");
             while ((ent = readdir(dir)) != NULL) {
                 if (std::strcmp(ent->d_name, ".") == 0 || std::strcmp(ent->d_name, "..") == 0)
                     continue;
                 _body.append("<a href=\"");
                 _body.append(ent->d_name);
+                if (ent->d_type == DT_DIR)
+                    _body.append("/");
                 _body.append("\">");
                 _body.append(ent->d_name);
+                if (ent->d_type == DT_DIR)
+                    _body.append("/");
                 _body.append("</a>\n");
             }
             _body.append("</pre><hr></body>\n</html>\n");

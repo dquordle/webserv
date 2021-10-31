@@ -136,14 +136,16 @@ void Webserver::doAccept(int i)
 //	exit(1);
 //}
 
+
 void Webserver::handleConnection(int i)
 {
 	int socket = pollStruct.getSocket(i);
 	int closeConnection = doRead(socket);
 	////////////////////////
+	std::cout << buffer;
 	Request req(buffer);
 //	req.getHeaders().headers;
-	Server serv = (*families)[0].getServerByName("HOST FIELD FROM REQUEST HEADER");
+	Server serv = (*families)[1].getServerByName("HOST FIELD FROM REQUEST HEADER");
 	Response resp(req.getStatusCode(), req.getStartLine(), req.getHeaders(), req.getBodies(), &serv);
 	doWrite(socket, resp.getResponse());
 	if (closeConnection) {
