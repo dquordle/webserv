@@ -7,7 +7,7 @@ int main(int argc, char** argv) {
 	else if (argc == 2)
 		conf_path = argv[1];
 	else
-		return 1;
+		Debug::FatalError("Wrong number of arguments");
 	std::vector<ServersFamily> families = Parser::parse(conf_path);
 	Webserver *webserver = new Webserver(&families);
 	webserver->start();

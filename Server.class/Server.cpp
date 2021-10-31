@@ -11,7 +11,7 @@ Server::Server()
 void Server::setIP(const std::string& ip)
 {
 	if (ip.empty())
-		exit(1);
+		Debug::FatalError("Configuration file error");
 	_ip = ip;
 }
 
@@ -19,7 +19,7 @@ void Server::setPort(const std::string& port)
 {
 	size_t pos = port.find_first_not_of("0123456789");
 	if (pos != std::string::npos || port.empty())
-		exit(1);
+		Debug::FatalError("Configuration file error");
 	_portStr = port;
 	sscanf(port.c_str(), "%d", &_port);
 }
@@ -27,7 +27,7 @@ void Server::setPort(const std::string& port)
 void Server::setServerName(const std::string & name)
 {
 	if (name.empty())
-		exit(1);
+		Debug::FatalError("Configuration file error");
 	size_t prev_pos = 0;
 	size_t pos = name.find(',');
 	while (pos != std::string::npos)
@@ -45,21 +45,28 @@ void Server::setServerName(const std::string & name)
 void Server::addError(const std::string & error)
 {
 	if (error.empty())
-		exit(10);
-	std::string errorPage = error.substr(3);
+		Debug::FatalError("Configuration file error");
+	size_t pagePos = error.find_first_not_of("0123456789");
+	if (pagePos == 0 || pagePos % 3 != 0)
+		Debug::FatalError("Configuration file error");
+	std::string errorPage = error.substr(pagePos);
 	if (errorPage.empty())
-		exit(1);
-	if (error.find_first_not_of("0123456789") != 3)
-		exit(1);
-	int code;
-	sscanf(error.c_str(), "%d", &code);
-	_errors[code] = errorPage;
+		Debug::FatalError("Configuration file error");
+	size_t pos = 0;
+	while (pos < pagePos)
+	{
+		int code;
+		std::string codeStr = error.substr(pos, 3);
+		sscanf(codeStr.c_str(), "%d", &code);
+		_errors[code] = errorPage;
+		pos += 3;
+	}
 }
 
 void Server::setMaxBodySize(const std::string & sizeStr)
 {
 	if (sizeStr.empty())
-		exit(1);
+		Debug::FatalError("Configuration file error");
 	int size;
 	sscanf(sizeStr.c_str(), "%d", &size);
 	_max_body_size = size;
@@ -74,11 +81,6 @@ void Server::addRoute(Route &route)
 void Server::setDefault(bool isDef)
 {
 	_is_default = isDef;
-}
-
-bool Server::isDefault() const
-{
-	return _is_default;
 }
 
 std::string Server::getIp()

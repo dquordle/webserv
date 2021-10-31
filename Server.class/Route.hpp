@@ -3,6 +3,7 @@
 
 #include <vector>
 #include "../IHTTPMessage.interface/Methods.hpp"
+#include "../Debug.class/Debug.hpp"
 
 class Route
 {

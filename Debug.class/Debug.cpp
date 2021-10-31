@@ -7,3 +7,11 @@ void Debug::Log(const std::string &log, bool isError) {
 		std::cout << log << std::endl;
 	}
 }
+
+void Debug::FatalError(const std::string &log, PollStruct *pollStruct)
+{
+	Log(log,true);
+	if (pollStruct != NULL)
+		pollStruct->cleanUpSockets();
+	exit(1);
+}

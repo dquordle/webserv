@@ -29,7 +29,7 @@ void Webserver::createSockets()
 int Webserver::socketInit() {
 	int sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (sock == -1) {
-		exit(1);
+		Debug::FatalError("socket function returned error", &pollStruct);
 	}
 	return sock;
 }
@@ -39,10 +39,8 @@ void Webserver::socketReusable(int sock) {
 	error_ = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&flagsOn_, sizeof(int));
 
 	if (error_ < 0) {
-		// close(sock);
-		pollStruct.cleanUpSockets();
-//		throw Server::ServerException("setsockopt() failed");
-		exit(1);
+		close(sock);
+		Debug::FatalError("setsockopt function returned error", &pollStruct);
 	}
 }
 
@@ -50,28 +48,22 @@ void Webserver::socketBind(int sock, ServersFamily& family)
 {
 	error_ = fcntl(sock, F_SETFL, O_NONBLOCK);
 	if (error_ < 0) {
-		// close(sock);
-		pollStruct.cleanUpSockets();
-//		throw Server::ServerException("fcntl() failed");
-		exit(1);
+		close(sock);
+		Debug::FatalError("fcntl function returned error", &pollStruct);
 	}
 
 	error_ = bind(sock, family.getSockAddr(), *(family.getSockAddrSize()));
 	if (error_ == -1) {
-		// close(sock);
-		pollStruct.cleanUpSockets();
-//		throw Server::ServerException("no bind");
-		exit(1);
+		close(sock);
+		Debug::FatalError("bind function returned error", &pollStruct);
 	}
 }
 
 void Webserver::socketListening(int sock) {
 	error_ = listen(sock, 10);
 	if (error_ == -1) {
-//		close(sock);
-		pollStruct.cleanUpSockets();
-//		throw Server::ServerException("no listen");
-		exit(1);
+		close(sock);
+		Debug::FatalError("listen function returned error", &pollStruct);
 	}
 }
 
@@ -101,7 +93,8 @@ void Webserver::handleEvent()
 		else {
 			handleConnection(i);
 		}
-		if (compress_) {  ///////////////////////Peredelat'
+//		pollStruct.setReventsZero(i);
+		if (compress_) {
 			compress_ = false;
 			pollStruct.compress();
 		}
@@ -116,12 +109,10 @@ void Webserver::doAccept(int i)
 	ServersFamily family = (*families)[i];
 	acceptFD = accept(sock, family.getSockAddr(), family.getSockAddrSize());
 	if (acceptFD < 0) {
-		server_run = false;
-		Debug::Log("no accept", true);
-//		throw Server::ServerException("no accept");
-		exit(1);
+//		server_run = false;
+		Debug::FatalError("accept function returned error", &pollStruct); //////////??????????
 	} else {
-		pollStruct.addConection(acceptFD);
+		pollStruct.addConection(acceptFD, i);
 	}
 }
 //
@@ -143,7 +134,8 @@ void Webserver::handleConnection(int i)
 	////////////////////////
 	Request req(buffer);
 //	req.getHeaders().headers;
-	Server serv = (*families)[0].getServerByName("HOST FIELD FROM REQUEST HEADER");
+	ServersFamily family = (*families)[pollStruct.getListeningIndex(i)];
+	Server serv = family.getServerByName("HOST FIELD FROM REQUEST HEADER");
 	Response resp(req.getStatusCode(), req.getStartLine(), req.getHeaders(), req.getBodies(), &serv);
 	doWrite(socket, resp.getResponse());
 	if (closeConnection) {

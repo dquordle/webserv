@@ -18,7 +18,8 @@ private:
 	int                 			timeout_;
 	bool                			compress_;
 	std::string         			buffer;
-//	std::map<int, std::string>		indexMap;
+
+
 
 
 public:
