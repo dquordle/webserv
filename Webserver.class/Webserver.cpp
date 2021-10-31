@@ -142,7 +142,6 @@ void Webserver::handleConnection(int i)
 	int socket = pollStruct.getSocket(i);
 	int closeConnection = doRead(socket);
 	////////////////////////
-	std::cout << buffer;
 	Request req(buffer);
 //	req.getHeaders().headers;
 	Server serv = (*families)[1].getServerByName("HOST FIELD FROM REQUEST HEADER");

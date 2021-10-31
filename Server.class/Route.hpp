@@ -66,8 +66,11 @@ public:
 
 	bool isAutoindexOn() { return _autoindexOn; }
 
+
 	std::string getSavePath() const { return _save_path; };
 	const std::string getIndexFile() const { return _index_file; };
+	const std::string getDirectory() const { return _directory; };
+	const std::string getName() const { return _name; };
 
 };
 

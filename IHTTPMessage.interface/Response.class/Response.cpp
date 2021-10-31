@@ -54,6 +54,8 @@ void Response::makeBodies() {
             setErrorBody();
             return;
         }
+        else
+            rewriteTargetIfRoot();
         if (_s_startline.method == "GET")
             doGetMethod();
         else if (_s_startline.method == "POST")
@@ -63,6 +65,19 @@ void Response::makeBodies() {
     }
     if (_statusCode != 200)
         setErrorBody();
+}
+
+void Response::rewriteTargetIfRoot() {
+    std::string root = _route->getDirectory();
+
+    if (!root.empty()) {
+        std::string routeName;
+
+        routeName = _route->getName();
+        if (routeName[routeName.length() - 1] != '/')
+            _s_startline.target.erase(0, routeName.length());
+        _s_startline.target.insert(0, root);
+    }
 }
 
 /**
@@ -172,7 +187,6 @@ void Response::doGetMethod() {
 //TODO: переписать target если directory
 // моежт не надо создавать path а просто переписать target
 
-std::cout << path << std::endl;
     path.erase(0, 1);
     if (path.empty()) {
         char buf[MAXPATHLEN];
@@ -273,11 +287,10 @@ void Response::doPostMethod() {
 
 void Response::doDeleteMethod() {
 //    TODO: decide how delete works with folders
-//    if (_s_startline.target == "/") {
-//        _statusCode = 405;
-//        _s_headers.headers.insert(std::pair<std::string, std::string>("Allow:","GET\r\n"));
-//    }
-    std::string filename = _s_startline.target;
+    if (_s_startline.target == "/")
+        _statusCode = 405;
+
+        std::string filename = _s_startline.target;
 
     if (remove((filename.erase(0, 1)).c_str()) == 0) {
         _statusCode = 200;
