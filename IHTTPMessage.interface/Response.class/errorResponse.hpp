@@ -9,6 +9,12 @@ static const std::string error_200 =
         "<body bgcolor=\"white\">\r\n"
         "<center><h1>200 OK</h1></center>\r\n";
 
+static const std::string error_301 =
+        "<html>\r\n"
+        "<head><title>301 Moved Permanently</title></head>\r\n"
+        "<body bgcolor=\"white\">\r\n"
+        "<center><h1>301 Moved Permanently</h1></center>\r\n";
+
 static const std::string error_400 =
         "<html>\r\n"
         "<head><title>400 Bad Request</title></head>\r\n"

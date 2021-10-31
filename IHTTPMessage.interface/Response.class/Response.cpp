@@ -20,7 +20,7 @@ _s_startline.target.insert(0, _requestHeaders.getReferer(_s_startline.target));
 void Response::makeStartline() {
     _statusLine = "HTTP/1.1 ";
 
-    std::string const arrStatus[] = {"200 OK", "400 Bad Request", "403 Forbidden", "404 Not Found", "405 Method Not Allowed",
+    std::string const arrStatus[] = {"200 OK", "301 Moved Permanently", "400 Bad Request", "403 Forbidden", "404 Not Found", "405 Method Not Allowed",
                                      "501 Not Implemented", "505 HTTP Version Not Supported"};
     std::ostringstream ss;
     ss << _statusCode;
@@ -54,8 +54,16 @@ void Response::makeBodies() {
             setErrorBody();
             return;
         }
-        else
+        else {
+            if (!_route->getRedirection().empty())
+            {
+                _statusCode = 301;
+                setLocation();
+                setErrorBody();
+                return;
+            }
             rewriteTargetIfRoot();
+        }
         if (_s_startline.method == "GET")
             doGetMethod();
         else if (_s_startline.method == "POST")
@@ -122,6 +130,10 @@ void Response::setServerName() {
     _s_headers.headers.insert(std::pair<std::string, std::string>("Server-Name", "╮(￣_￣)╭"));
 }
 
+void Response::setLocation() {
+    _s_headers.headers.insert(std::pair<std::string, std::string>("Location", _route->getRedirection()));
+}
+
 /**
  * depending on status code fill body with error message from errorResponse.hpp
  */
@@ -152,6 +164,9 @@ void Response::setErrorBody() {
 
 void Response::setDefaultError() {
     switch (_statusCode) {
+        case 301:
+            _body = error_301;
+            break;
         case 400:
             _body = error_400;
             break;

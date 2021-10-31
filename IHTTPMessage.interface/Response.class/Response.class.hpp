@@ -41,6 +41,7 @@ private:
     void setDate();
     void setContentLength();
     void setContentType();
+    void setLocation();
     void setServerName();
 
     void setDefaultError();
