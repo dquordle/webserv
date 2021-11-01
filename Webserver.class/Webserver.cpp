@@ -7,7 +7,7 @@ Webserver::Webserver(std::vector<ServersFamily>* Families)
 	families = Families;
 	error_ = 0;
 	server_run = true;
-	compress_ = true;
+	compress_ = false;
 	timeout_ = DEFAULT_TIMEOUT;
 	createSockets();
 }
@@ -93,7 +93,7 @@ void Webserver::handleEvent()
 		else {
 			handleConnection(i);
 		}
-//		pollStruct.setReventsZero(i);
+		pollStruct.setReventsZero(i);
 		if (compress_) {
 			compress_ = false;
 			pollStruct.compress();
@@ -130,37 +130,40 @@ void Webserver::doAccept(int i)
 void Webserver::handleConnection(int i)
 {
 	int socket = pollStruct.getSocket(i);
-	int closeConnection = doRead(socket);
+	bool closeConnection = doRead(socket);
 	////////////////////////
-	Request req(buffer);
-//	req.getHeaders().headers;
-	ServersFamily family = (*families)[pollStruct.getListeningIndex(i)];
-	Server serv = family.getServerByName("HOST FIELD FROM REQUEST HEADER");
-	Response resp(req.getStatusCode(), req.getStartLine(), req.getHeaders(), req.getBodies(), &serv);
-	doWrite(socket, resp.getResponse());
 	if (closeConnection) {
 		pollStruct.closeConnection(i);
 		compress_ = true;
 	}
+	else {
+		Request req(buffer);
+		//	req.getHeaders().headers;
+		ServersFamily family = (*families)[pollStruct.getListeningIndex(i)];
+		Server serv = family.getServerByName("HOST FIELD FROM REQUEST HEADER");
+		Response resp(req.getStatusCode(), req.getStartLine(), req.getHeaders(), req.getBodies(), &serv);
+		doWrite(socket, resp.getResponse());
+		buffer.clear();
+	}
 }
 
-int Webserver::doRead(int socket)
+bool	Webserver::doRead(int socket)
 {
-	char buf[1024];
-	std::memset(buf, 0, 1024);
-	error_ = recv(socket, buf, 1024, 0);
+	char buf[10240];
+	std::memset(buf, 0, 10240);
+	error_ = recv(socket, buf, 10240, 0);
 	if (error_ <= 0) {
 		if (error_ == 0) {
 			std::string mes = std::to_string(socket) + " close connect";
-			Debug::Log(mes, true);
-			//            PollStruct::closeConnection(?);
+			Debug::Log(mes);
 		} else
 			Debug::Log("recv() failed", true);
-		return 1;
+		return true;
 	} else {
 		buffer = std::string(buf);
 	}
-	return 0;}
+	return false;
+}
 
 void Webserver::doWrite(int socket, const std::string &buf)
 {
