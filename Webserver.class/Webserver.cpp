@@ -109,8 +109,7 @@ void Webserver::doAccept(int i)
 	ServersFamily family = (*families)[i];
 	acceptFD = accept(sock, family.getSockAddr(), family.getSockAddrSize());
 	if (acceptFD < 0) {
-//		server_run = false;
-		Debug::FatalError("accept function returned error", &pollStruct); //////////??????????
+		Debug::FatalError("accept function returned error", &pollStruct);
 	} else {
 		pollStruct.addConection(acceptFD, i);
 	}
@@ -131,27 +130,38 @@ void Webserver::handleConnection(int i)
 {
 	int socket = pollStruct.getSocket(i);
 	bool closeConnection = doRead(socket);
-	////////////////////////
 	if (closeConnection) {
 		pollStruct.closeConnection(i);
 		compress_ = true;
+		requests.erase(socket);
+		return;
 	}
-	else {
-		Request req(buffer);
-		//	req.getHeaders().headers;
+	if (requestIsFull(requests[socket]))
+	{
+		if (requests[socket].find("Transfer-Encoding: chunked") != std::string::npos)
+			transferDecoding(socket);
+		Debug::Log(requests[socket]);
+		Request req(requests[socket]);
+		std::string host;
+		try {
+			host = req.getHeaders().headers.at("Host");
+		}
+		catch (std::exception e) {
+			host = "";
+		}
 		ServersFamily family = (*families)[pollStruct.getListeningIndex(i)];
-		Server serv = family.getServerByName("HOST FIELD FROM REQUEST HEADER");
+		Server serv = family.getServerByName(host);
 		Response resp(req.getStatusCode(), req.getStartLine(), req.getHeaders(), req.getBodies(), &serv);
 		doWrite(socket, resp.getResponse());
-		buffer.clear();
+		requests[socket].clear();
 	}
 }
 
 bool	Webserver::doRead(int socket)
 {
-	char buf[10240];
-	std::memset(buf, 0, 10240);
-	error_ = recv(socket, buf, 10240, 0);
+	char buf[BUFFER_SIZE];
+	std::memset(buf, 0, BUFFER_SIZE);
+	error_ = recv(socket, buf, BUFFER_SIZE - 1, 0);
 	if (error_ <= 0) {
 		if (error_ == 0) {
 			std::string mes = std::to_string(socket) + " close connect";
@@ -160,7 +170,7 @@ bool	Webserver::doRead(int socket)
 			Debug::Log("recv() failed", true);
 		return true;
 	} else {
-		buffer = std::string(buf);
+		requests[socket].append(buf);
 	}
 	return false;
 }
@@ -171,6 +181,51 @@ void Webserver::doWrite(int socket, const std::string &buf)
 	if (error_ == -1) {
 		Debug::Log("no write", true);
 	}
+}
+
+bool Webserver::requestIsFull(const std::string& request)
+{
+	size_t headerEnd = request.find("\r\n\r\n");
+	if (headerEnd == std::string::npos)
+		return false;
+	size_t clKey = request.find("Content-Length");
+	if (clKey != std::string::npos)
+	{
+		size_t clStart = request.find(':', clKey) + 1;
+		size_t clEnd = request.find("\r\n", clStart);
+		int clValue;
+		sscanf(request.substr(clStart, clEnd - clStart).c_str(), "%d", &clValue);
+		if (request.length() - headerEnd - 4 < clValue)
+			return false;
+	}
+	size_t teKey = request.find("Transfer-Encoding: chunked");
+	if (teKey != std::string::npos)
+	{
+		if (request.find("0\r\n\r\n") == std::string::npos)
+			return false;
+	}
+	return true;
+}
+
+void Webserver::transferDecoding(int socket)
+{
+	size_t headerEnd = requests[socket].find("\r\n\r\n");
+	std::string res = requests[socket].substr(0, headerEnd + 4);
+	size_t prev_pos = headerEnd + 4;
+	size_t new_pos = requests[socket].find("\r\n", prev_pos);
+	std::string curSize = requests[socket].substr(prev_pos, new_pos - prev_pos);
+	while (curSize != "0")
+	{
+		unsigned int x;
+		std::stringstream ss;
+		ss << std::hex << curSize;
+		ss >> x;
+		res.append(requests[socket].substr(new_pos + 2, x));
+		prev_pos = new_pos + 4 + x;
+		new_pos = requests[socket].find("\r\n", prev_pos);
+		curSize = requests[socket].substr(prev_pos, new_pos - prev_pos);
+	}
+	requests[socket] = res;
 }
 
 

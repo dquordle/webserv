@@ -17,8 +17,7 @@ private:
 	bool 							server_run;
 	int                 			timeout_;
 	bool                			compress_;
-	std::string         			buffer;
-
+	std::map<int, std::string>		requests;
 
 
 
@@ -42,6 +41,9 @@ private:
 	bool	doRead(int socket);
 
 	void	doWrite(int socket, const std::string & buf);
+
+	bool	requestIsFull(const std::string& request);
+	void	transferDecoding(int socket);
 };
 
 
