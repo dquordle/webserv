@@ -108,7 +108,10 @@ Route *Parser::parseRoute(std::ifstream &ifs, const std::string& name)
 	while (!str.empty())
 	{
 		if (str == "}")
+		{
+			route->checkCgi();
 			return route;
+		}
 		unsigned long pos = str.find(':');
 		if (pos == std::string::npos)
 			Debug::FatalError("Configuration file error");

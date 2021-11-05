@@ -103,7 +103,7 @@ void Request::makeBodies()  {
     std::vector<std::string> vSplit = splitVector(bodyBegin);
 
     _s_bodies.bodies = vSplit;
-    if (this->_s_bodies.bodies.empty())
+    if (this->_s_bodies.bodies.empty()) ///wat?
 		this->_s_bodies.bodies.clear();
 }
 

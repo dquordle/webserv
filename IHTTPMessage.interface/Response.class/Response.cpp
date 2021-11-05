@@ -62,6 +62,8 @@ void Response::makeBodies() {
                 setErrorBody();
                 return;
             }
+            else if (_route->isCGI())
+            	cgi();
             rewriteTargetIfRoot();
         }
         if (_s_startline.method == "GET")
@@ -361,3 +363,11 @@ const std::string &Response::getStatusLine() const { return _statusLine; }
 const std::string &Response::getBody() const { return _body; }
 
 const std::string &Response::getResponse() const {return _response; }
+
+void Response::cgi()
+{
+	/////// Отправить весь запрос строкой в файл который пришел в запросе;
+	/////// Вызвать system(cgi.str().c_str());
+	/////// Где std::stringstream cgi << client->location->getCGIPath() << " < " << file << " > cgi_raw_result";
+	/////// Из файла убрать хедер, дописать свой и отправить это добро ответом;
+}

@@ -57,6 +57,8 @@ private:
     const std::string &getStatusLine() const;
     const std::string &getBody() const;
 
+
+    void cgi();
 };
 
 #endif

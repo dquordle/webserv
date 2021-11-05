@@ -88,3 +88,16 @@ void Route::setMethods(const std::string &methods)
 		Debug::FatalError("Configuration file error");
 }
 
+bool Route::isCGI()
+{
+	if (_cgi_ext.empty() || _cgi_path.empty())
+		return false;
+	return true;
+}
+
+void Route::checkCgi()
+{
+	if (_cgi_path.empty() ^ _cgi_ext.empty())
+		Debug::FatalError("Configuration file error");
+}
+

@@ -71,6 +71,19 @@ void Webserver::start()
 {
 	Debug::Log("Start server");
 
+//	bool b;
+//	requests[0] = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nTransfer-Encoding: chunked\r\n";
+//	b = requestIsFull(requests[0]);
+//	requests[0].append("Connection: keep-alive\r\n\r\n");
+//	b = requestIsFull(requests[0]);
+//	requests[0].append("B\r\nchunk 1\r\n\r\n\r\n");
+//	b = requestIsFull(requests[0]);
+//	requests[0].append("9\r\nchunk 2\r\n\r\n");
+//	b = requestIsFull(requests[0]);
+//	requests[0].append("0\r\n\r\n");
+//	b = requestIsFull(requests[0]);
+//	transferDecoding(0);
+//	Debug::Log(requests[0]);
 	for (;server_run;) {
 		pollStruct.makePoll(timeout_);
 		handleEvent();
@@ -140,7 +153,6 @@ void Webserver::handleConnection(int i)
 	{
 		if (requests[socket].find("Transfer-Encoding: chunked") != std::string::npos)
 			transferDecoding(socket);
-		Debug::Log(requests[socket]);
 		Request req(requests[socket]);
 		std::string host;
 		try {
