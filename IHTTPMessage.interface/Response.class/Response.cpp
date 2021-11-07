@@ -27,7 +27,7 @@ void Response::makeStartline() {
 
     std::string errorNumber = ss.str();
 
-    for (int i = 0; i < 5 ; i++)
+    for (int i = 0; i < 8 ; i++)
         if ((arrStatus[i].find(errorNumber)) != std::string::npos)
         {
             _statusLine.append(arrStatus[i]);
@@ -41,8 +41,10 @@ void Response::makeHeaders() {
 //    setContentType();
     setContentLength();
     setServerName();
-//    if (_statusCode == 405)
-//        _s_headers.headers.insert(std::pair<std::string, std::string>("Allow:","GET, POST, DELETE\r\n"));
+    if (_statusCode == 405)
+        _s_headers.headers.insert(std::pair<std::string, std::string>("Allow:", _route->getAllowedMethods()));
+    if (_statusCode == 301)
+        setLocation();
 }
 
 void Response::makeBodies() {
@@ -51,19 +53,19 @@ void Response::makeBodies() {
         _route = _server->chooseRoute(_s_startline.target);
         if (_route == nullptr) {
             _statusCode = 404;
-            setErrorBody();
-            return;
         }
         else {
-            if (!_route->getRedirection().empty())
-            {
-                _statusCode = 301;
-                setLocation();
-                setErrorBody();
-                return;
+            if (!_route->isMethodInVector(_s_startline.method)) {
+                _statusCode = 405;
             }
-            rewriteTargetIfRoot();
+            else if (!_route->getRedirection().empty()) {
+                _statusCode = 301;
+            }
         }
+    }
+    if (_statusCode == 200)
+    {
+        rewriteTargetIfRoot();
         if (_s_startline.method == "GET")
             doGetMethod();
         else if (_s_startline.method == "POST")
@@ -125,9 +127,7 @@ void Response::setDate() {
 }
 
 void Response::setServerName() {
-//    TODO: think about normal name
-// if getServerName from host (aka server) do insert else do not
-    _s_headers.headers.insert(std::pair<std::string, std::string>("Server-Name", "╮(￣_￣)╭"));
+    _s_headers.headers.insert(std::pair<std::string, std::string>("Server-Name", "Egor"));
 }
 
 void Response::setLocation() {
@@ -185,9 +185,6 @@ void Response::setDefaultError() {
         case 413:
             _body = error_413;
             break;
-        case 418:
-            _body = error_418;
-            break;
         case 501:
             _body = error_501;
             break;
@@ -199,10 +196,8 @@ void Response::setDefaultError() {
 
 void Response::doGetMethod() {
     std::string path = _s_startline.target;
-//TODO: переписать target если directory
-// моежт не надо создавать path а просто переписать target
+    path.erase(0, path.find_first_not_of('/'));
 
-    path.erase(0, 1);
     if (path.empty()) {
         char buf[MAXPATHLEN];
         path = getwd(buf);
@@ -301,7 +296,6 @@ void Response::doPostMethod() {
 }
 
 void Response::doDeleteMethod() {
-//    TODO: decide how delete works with folders
     if (_s_startline.target == "/")
         _statusCode = 405;
 
@@ -309,7 +303,7 @@ void Response::doDeleteMethod() {
 
     if (remove((filename.erase(0, 1)).c_str()) == 0) {
         _statusCode = 200;
-        _body = "File is deleted";
+//        _body = "File is deleted";
         return ;
     }
     _statusCode = 404;
