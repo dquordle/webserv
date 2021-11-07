@@ -74,3 +74,25 @@ void Route::setMethods(const std::string &methods)
 		_allowed_methods.push_back(method);
 }
 
+bool Route::isMethodInVector(const std::string & methodName)  {
+    Method method = Methods::getMethodStoE(methodName);
+
+    std::vector<Method>::iterator it = _allowed_methods.begin();
+    std::vector<Method>::iterator ite = _allowed_methods.end();
+
+    if (find(it, ite, method) != ite)
+        return true;
+    return false;
+}
+
+const std::string Route::getAllowedMethods() {
+    std::vector<Method>::iterator it = _allowed_methods.begin();
+    std::string ret;
+
+    for (; it != _allowed_methods.end(); it++) {
+        ret.append(Methods::getMethodEtoS(*it));
+        ret.append(", ");
+    }
+    return ret;
+}
+
