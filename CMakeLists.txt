@@ -14,6 +14,7 @@ add_executable(webserv
         Server.class/Route.cpp
         Server.class/Server.cpp
         Config_parser/Parser.cpp
-#        Server.class/filekakfile.cpp
+        Errors/Errors.cpp
+        cgi/cgi.cpp
         Webserver.class/Webserver.cpp
         Server.class/ServersFamily.cpp)

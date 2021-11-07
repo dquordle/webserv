@@ -42,6 +42,33 @@ struct s_headers {
 	    return false;
 	}
 
+	std::string getHost() const {
+	    std::map<std::string, std::string>::const_iterator it;
+
+	    it = headers.find("Host");
+	    if (it != headers.end())
+	        return it->second;
+        return std::string();
+	}
+
+	std::string getContentType() const {
+	    std::map<std::string, std::string>::const_iterator it;
+
+	    it = headers.find("Content-Type");
+	    if (it != headers.end())
+	        return it->second;
+	    return std::string();
+	}
+
+	std::string getContentLength() const {
+	    std::map<std::string, std::string>::const_iterator it;
+
+	    it = headers.find("Content-Length");
+	    if (it != headers.end())
+	        return it->second;
+	    return std::string();
+	}
+
 	const std::string getReferer(std::string target) {
 	    std::map<std::string, std::string>::const_iterator it;
 	    std::map<std::string, std::string>::const_iterator delimetr;

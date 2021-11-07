@@ -74,6 +74,9 @@ public:
 	const std::string getDirectory() const { return _directory; };
 	const std::string getName() const { return _name; };
 	const std::string getRedirection() const { return _redirection; };
+	const std::string getAllowedMethods();
+
+	bool isMethodInVector(const std::string & methodName);
 
 	bool	isCGI();
 
