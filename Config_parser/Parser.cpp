@@ -2,14 +2,12 @@
 
 std::vector<ServersFamily> Parser::parse(const std::string& config)
 {
-	std::ifstream ifs(config);
 	std::vector<ServersFamily> families;
 
+	std::ifstream ifs(config);
 	if (!ifs.good())
-	{
-		std::cout << "File error" << std::endl;
-		exit(1);         ///////////// Errors.file_error();
-	}
+		Debug::FatalError("File error");
+
 	std::string nextLine = superGetNextLine(ifs);
 	while (nextLine == "server{")
 	{
@@ -20,7 +18,7 @@ std::vector<ServersFamily> Parser::parse(const std::string& config)
 	}
 	ifs.close();
 	if (families.empty())
-		exit(1);
+		Debug::FatalError("Configuration file error");
 	return families;
 }
 
@@ -44,61 +42,58 @@ void Parser::putServerToFamily(std::vector<ServersFamily> *families, Server &ser
 
 Server * Parser::parseServer(std::ifstream & ifs)
 {
-	Server *host = new Server();
+	Server *server = new Server();
 	std::string str = superGetNextLine(ifs);
 	while (!str.empty())
 	{
 		if (str == "routes{")
-			parseRoutes(ifs, *host);
+			parseRoutes(ifs, *server);
 		else if (str == "}")
-		{
-			return host;
-			//the end
-		}
+			return server;
 		else
 		{
 			unsigned long pos = str.find(':');
 			if (pos == std::string::npos)
-				exit(1); //////////_error
+				Debug::FatalError("Configuration file error");
 			std::string key = str.substr(0, pos);
 			std::string value = str.substr(pos + 1, str.size());
-			putFieldIntoHost(*host, key, value);
+			putFieldIntoHost(*server, key, value);
 		}
 		str = superGetNextLine(ifs);
 	}
-	exit(1);
+	Debug::FatalError("Configuration file error");
 }
 
-void Parser::putFieldIntoHost(Server & host, const std::string& key, const std::string& value)
+void Parser::putFieldIntoHost(Server & server, const std::string& key, const std::string& value)
 {
 	if (key == "host")
-		host.setIP(value);
+		server.setIP(value);
 	else if (key == "port")
-		host.setPort(value);
+		server.setPort(value);
 	else if (key == "server_name")
-		host.setServerName(value);
-	else if (key == "error_page")	////////////////////////////////////////////
-		host.addError(value);
+		server.setServerName(value);
+	else if (key == "error_page")
+		server.addError(value);
 	else if (key == "limit_body_size")
-		host.setMaxBodySize(value);
+		server.setMaxBodySize(value);
 	else
-		exit(1);
+		Debug::FatalError("Configuration file error");
 }
 
-void Parser::parseRoutes(std::ifstream &ifs, Server &host)
+void Parser::parseRoutes(std::ifstream &ifs, Server &server)
 {
 	std::string str = superGetNextLine(ifs);
 	if (str.empty())
-		exit(1);
+		Debug::FatalError("Configuration file error");
 	while (str != "}")
 	{
 		std::string start = str.substr(0, 5);
 		char end = str.at(str.size() - 1);
 		if (start != "route" || end != '{')
-			exit(1);
+			Debug::FatalError("Configuration file error");
 		std::string routeName = str.substr(5, str.size() - 6);
 		Route *route = parseRoute(ifs, routeName);
-		host.addRoute(*route);
+		server.addRoute(*route);
 		delete(route);
 		str = superGetNextLine(ifs);
 	}
@@ -107,7 +102,7 @@ void Parser::parseRoutes(std::ifstream &ifs, Server &host)
 Route *Parser::parseRoute(std::ifstream &ifs, const std::string& name)
 {
 	if (name.empty())
-		exit(1);
+		Debug::FatalError("Configuration file error");
 	Route *route = new Route(name);
 	std::string str = superGetNextLine(ifs);
 	while (!str.empty())
@@ -116,16 +111,15 @@ Route *Parser::parseRoute(std::ifstream &ifs, const std::string& name)
 			return route;
 		unsigned long pos = str.find(':');
 		if (pos == std::string::npos)
-			exit(1); //////////_error
+			Debug::FatalError("Configuration file error");
 		std::string key = str.substr(0, pos);
 		std::string value = str.substr(pos + 1, str.size());
 		putFieldIntoRoute(*route, key, value);
 		str = superGetNextLine(ifs);
 	}
-	exit(1);
+	Debug::FatalError("Configuration file error");
 }
-void Parser::putFieldIntoRoute(Route &route, const std::string &key,
-							   const std::string &value)
+void Parser::putFieldIntoRoute(Route &route, const std::string &key, const std::string &value)
 {
 	if (key == "directory")
 		route.setDirectory(value);
@@ -144,7 +138,7 @@ void Parser::putFieldIntoRoute(Route &route, const std::string &key,
 	else if (key == "cgi_ext")
 		route.setCgiExt(value);
 	else
-		exit(1);
+		Debug::FatalError("Configuration file error");
 }
 
 std::string Parser::superGetNextLine(std::ifstream & ifs)
@@ -156,7 +150,7 @@ std::string Parser::superGetNextLine(std::ifstream & ifs)
 		str.erase(end_pos, str.end());
 		std::string::iterator end = std::remove(str.begin(), str.end(), ' ');
 		str.erase(end, str.end());
-		unsigned long pos = str.find('#'); /////////////////// Ломается кавычками
+		unsigned long pos = str.find('#');
 		if (pos != std::string::npos)
 			str.erase(pos, str.size());
 		if (!str.empty())

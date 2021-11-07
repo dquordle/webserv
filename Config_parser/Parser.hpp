@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iostream>
 #include "../Server.class/ServersFamily.hpp"
+#include "../Debug.class/Debug.hpp"
 
 class Parser
 {

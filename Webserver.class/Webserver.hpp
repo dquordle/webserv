@@ -13,12 +13,12 @@ class Webserver
 private:
 	PollStruct		    			pollStruct;
 	std::vector<ServersFamily>*		families;
-	int								error_;
+	ssize_t 						error_;
 	bool 							server_run;
 	int                 			timeout_;
 	bool                			compress_;
-	std::string         			buffer;
-//	std::map<int, std::string>		indexMap;
+	std::map<int, std::string>		requests;
+
 
 
 public:
@@ -38,9 +38,12 @@ private:
 	void	doAccept(int i);
 	void	handleConnection(int i);
 
-	int		doRead(int socket);
+	bool	doRead(int socket);
 
 	void	doWrite(int socket, const std::string & buf);
+
+	bool	requestIsFull(const std::string& request);
+	void	transferDecoding(int socket);
 };
 
 
