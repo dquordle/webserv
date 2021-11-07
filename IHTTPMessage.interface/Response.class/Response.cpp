@@ -21,13 +21,13 @@ void Response::makeStartline() {
     _statusLine = "HTTP/1.1 ";
 
     std::string const arrStatus[] = {"200 OK", "301 Moved Permanently", "400 Bad Request", "403 Forbidden", "404 Not Found", "405 Method Not Allowed",
-                                     "501 Not Implemented", "505 HTTP Version Not Supported"};
+                                     "501 Not Implemented", "505 HTTP Version Not Supported", "204 No Content"};
     std::ostringstream ss;
     ss << _statusCode;
 
     std::string errorNumber = ss.str();
 
-    for (int i = 0; i < 8 ; i++)
+    for (int i = 0; i < 9 ; i++)
         if ((arrStatus[i].find(errorNumber)) != std::string::npos)
         {
             _statusLine.append(arrStatus[i]);
@@ -164,6 +164,9 @@ void Response::setErrorBody() {
 
 void Response::setDefaultError() {
     switch (_statusCode) {
+    	case 204:
+    		_body = error_204;
+    		break;
         case 301:
             _body = error_301;
             break;
@@ -285,14 +288,24 @@ void Response::doPostMethod() {
         _statusCode = 404;
         return ;
     }
-
-    std::vector<std::string>::iterator it = _s_bodies.bodies.begin();
-    std::vector<std::string>::iterator ite = _s_bodies.bodies.end();
-
-    for (; it != ite; ++it) {
-        outfile << (*it);
-    }
-    outfile.close();
+//
+//    std::vector<std::string>::iterator it = _s_bodies.bodies.begin();
+//    std::vector<std::string>::iterator ite = _s_bodies.bodies.end();
+//
+//    for (; it != ite; ++it) {
+//        outfile << (*it);
+//    }
+	if (_route->isCGI())
+	{
+		outfile << _full_request;
+		outfile.close();
+		cgi(filename);
+	}
+	else
+	{
+		outfile << _s_body;
+		outfile.close();
+	}
 }
 
 void Response::doDeleteMethod() {
@@ -356,10 +369,11 @@ const std::string &Response::getBody() const { return _body; }
 
 const std::string &Response::getResponse() const {return _response; }
 
-void Response::cgi()
+void Response::cgi(const std::string& file)
 {
 	/////// Отправить весь запрос строкой в файл который пришел в запросе;
-	/////// Вызвать system(cgi.str().c_str());
-	/////// Где std::stringstream cgi << client->location->getCGIPath() << " < " << file << " > cgi_raw_result";
+	std::stringstream cgi;
+	cgi << _route->getCGIPath() << " < " << file << " > cgi_raw_result";
+	system(cgi.str().c_str());
 	/////// Из файла убрать хедер, дописать свой и отправить это добро ответом;
 }

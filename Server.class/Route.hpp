@@ -79,6 +79,7 @@ public:
 	bool isMethodInVector(const std::string & methodName);
 
 	bool	isCGI();
+	std::string getCGIPath();
 
 
 };

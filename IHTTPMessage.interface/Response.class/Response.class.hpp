@@ -58,7 +58,7 @@ private:
     const std::string &getBody() const;
 
 
-    void cgi();
+    void cgi(const std::string& file);
 };
 
 #endif

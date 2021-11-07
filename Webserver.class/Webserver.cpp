@@ -164,7 +164,7 @@ void Webserver::handleConnection(int i)
 		ServersFamily family = (*families)[pollStruct.getListeningIndex(i)];
 		Server serv = family.getServerByName(host);
 		Response resp(req.getStatusCode(), req.getStartLine(), req.getHeaders(), req.getBodies(), &serv);
-		doWrite(socket, resp.getResponse());
+		doWrite(socket, resp.getResponse()); ///////// should go through poll first
 		requests[socket].clear();
 	}
 }
@@ -174,6 +174,7 @@ bool	Webserver::doRead(int socket)
 	char buf[BUFFER_SIZE];
 	std::memset(buf, 0, BUFFER_SIZE);
 	error_ = recv(socket, buf, BUFFER_SIZE - 1, 0);
+	Debug::Log(buf);
 	if (error_ <= 0) {
 		if (error_ == 0) {
 			std::string mes = std::to_string(socket) + " close connect";

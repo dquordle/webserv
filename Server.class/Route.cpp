@@ -123,3 +123,8 @@ void Route::checkCgi()
 		Debug::FatalError("Configuration file error");
 }
 
+std::string Route::getCGIPath()
+{
+	return _cgi_path;
+}
+
