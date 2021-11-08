@@ -11,6 +11,14 @@ static const std::string error_200 =
         "</body>"
         "</html>\r\n";
 
+static const std::string error_201 =
+        "<html>\r\n"
+        "<head><title>201 Created</title></head>\r\n"
+        "<body bgcolor=\"white\">\r\n"
+        "<center><h1>201 Created</h1></center>\r\n"
+        "</body>"
+        "</html>\r\n";
+
 static const std::string error_301 =
         "<html>\r\n"
         "<head><title>301 Moved Permanently</title></head>\r\n"

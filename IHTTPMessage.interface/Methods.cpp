@@ -11,7 +11,7 @@ bool Methods::isImplemented(const std::string & methodStr)
 bool Methods::isAllowed(const std::string & methodStr)
 {
 	Method method = getMethodStoE(methodStr);
-	if (method != NOT_IMPLEMENTED && method < 3)
+	if (method != NOT_IMPLEMENTED && method < 4)
 		return true;
 	return false;
 }

@@ -68,7 +68,7 @@ void Response::makeBodies() {
         rewriteTargetIfRoot();
         if (_s_startline.method == "GET")
             doGetMethod();
-        else if (_s_startline.method == "POST")
+        else if (_s_startline.method == "POST" || _s_startline.method == "PUT")
             doPostMethod();
         else
             doDeleteMethod();
@@ -84,7 +84,7 @@ void Response::rewriteTargetIfRoot() {
         std::string routeName;
 
         routeName = _route->getName();
-        if (routeName[routeName.length() - 1] != '/')
+//        if (routeName[routeName.length() - 1] != '/')
             _s_startline.target.erase(0, routeName.length());
         _s_startline.target.insert(0, root);
     }
@@ -220,6 +220,7 @@ void Response::getFolder(std::string & path) {
     DIR *dir;
     struct dirent *ent;
 
+
     if ((dir = opendir(path.c_str())) != NULL) {
         if (_route->isAutoindexOn()) {
             _body = "<html>\n<head><title>Index of ";
@@ -243,14 +244,14 @@ void Response::getFolder(std::string & path) {
             _body.append("</pre><hr></body>\n</html>\n");
         } else {
             if (_route->getIndexFile().empty())
-                _statusCode = 403;
+                _statusCode = 404;
             else {
                 if (path.find(path.length() - 1, '/') == std::string::npos)
                     path.append("/");
                 getFile(path.append(_route->getIndexFile()));
             }
-            if (_statusCode == 404)
-                _statusCode = 403;
+//            if (_statusCode == 404)
+//                _statusCode = 403;
         }
         closedir (dir);
     } else
