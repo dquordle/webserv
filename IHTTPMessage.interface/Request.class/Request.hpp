@@ -20,6 +20,8 @@ public:
 
 	int getStatusCode() const;
 
+	std::string getHost() const;
+
 private:
 	virtual void makeStartline();
 	virtual void makeHeaders();

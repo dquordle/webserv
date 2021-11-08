@@ -142,15 +142,8 @@ void Webserver::handleConnection(int i)
 			transferDecoding(socket);
 		Debug::Log(requests[socket]);
 		Request req(requests[socket]);
-		std::string host;
-		try {
-			host = req.getHeaders().headers.at("Host");
-		}
-		catch (std::exception e) {
-			host = "";
-		}
 		ServersFamily family = (*families)[pollStruct.getListeningIndex(i)];
-		Server serv = family.getServerByName(host);
+		Server serv = family.getServerByName(req.getHost());
 		Response resp(req.getStatusCode(), req.getStartLine(), req.getHeaders(), req.getBodies(), &serv);
 		doWrite(socket, resp.getResponse());
 		requests[socket].clear();
