@@ -14,6 +14,7 @@
 #include <dirent.h>
 #include <cstring>
 #include "../../Server.class/Server.hpp"
+#include "../../cgi/cgi.hpp"
 
 class Response : public IHTTPMessage {
 private:
@@ -57,8 +58,6 @@ private:
     const std::string &getStatusLine() const;
     const std::string &getBody() const;
 
-
-    void cgi(const std::string& file);
 };
 
 #endif

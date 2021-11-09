@@ -165,7 +165,7 @@ void Response::setErrorBody() {
 void Response::setDefaultError() {
     switch (_statusCode) {
     	case 204:
-    		_body = error_204;
+    		_body = error_201;
     		break;
         case 301:
             _body = error_301;
@@ -289,18 +289,12 @@ void Response::doPostMethod() {
         _statusCode = 404;
         return ;
     }
-//
-//    std::vector<std::string>::iterator it = _s_bodies.bodies.begin();
-//    std::vector<std::string>::iterator ite = _s_bodies.bodies.end();
-//
-//    for (; it != ite; ++it) {
-//        outfile << (*it);
-//    }
 	if (_route->isCGI())
 	{
 		outfile << _full_request;
 		outfile.close();
-		cgi(filename);
+		CGI cgi(_route->getCGIPath(), _s_startline, _s_headers);
+		_body = cgi.executeCGI();
 	}
 	else
 	{
@@ -370,11 +364,3 @@ const std::string &Response::getBody() const { return _body; }
 
 const std::string &Response::getResponse() const {return _response; }
 
-void Response::cgi(const std::string& file)
-{
-	/////// Отправить весь запрос строкой в файл который пришел в запросе;
-	std::stringstream cgi;
-	cgi << _route->getCGIPath() << " < " << file << " > cgi_raw_result";
-	system(cgi.str().c_str());
-	/////// Из файла убрать хедер, дописать свой и отправить это добро ответом;
-}

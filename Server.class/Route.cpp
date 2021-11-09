@@ -5,6 +5,8 @@ Route::Route(const std::string & name) : _name(name)
 	_allowed_methods.push_back(GET);
 	_allowed_methods.push_back(POST);
 	_allowed_methods.push_back(DELETE);
+	_allowed_methods.push_back(HEAD);
+	_allowed_methods.push_back(PUT);
 	_autoindexOn = false;
 }
 
