@@ -126,3 +126,7 @@ std::vector<std::string> Request::splitVector(std::string lines, const std::stri
 		result.push_back(lines.substr(0, pos));
 	return result;
 }
+
+std::string Request::getHost() const {
+   return _s_headers.getHost();
+}

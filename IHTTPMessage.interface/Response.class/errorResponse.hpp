@@ -11,14 +11,13 @@ static const std::string error_200 =
         "</body>"
         "</html>\r\n";
 
-static const std::string error_204 =
-	"<html>\r\n"
-	"<head><title>204 No Content</title></head>\r\n"
-	"<body bgcolor=\"white\">\r\n"
-	"<center><h1>204 No Content</h1></center>\r\n"
-	"</body>"
-	"</html>\r\n";
-
+static const std::string error_201 =
+        "<html>\r\n"
+        "<head><title>201 Created</title></head>\r\n"
+        "<body bgcolor=\"white\">\r\n"
+        "<center><h1>201 Created</h1></center>\r\n"
+        "</body>"
+        "</html>\r\n";
 
 static const std::string error_301 =
         "<html>\r\n"

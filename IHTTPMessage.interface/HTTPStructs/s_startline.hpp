@@ -19,12 +19,6 @@ struct s_startline {
 		return *this;
 	}
 
-//	bool isMethodAllowed() const {
-//	    if (method == "GET" || method == "POST" || method == "DELETE")
-//	        return true;
-//	    return false;
-//    }
-
     bool isVersionCorrect() const {
 	    if (version.compare("HTTP/1.1" ) == 0)
 	        return true;
@@ -34,6 +28,8 @@ struct s_startline {
     bool isMethodImplemented() const {
 	    const std::string methods[] = {"GET", "POST", "DELETE", "PUT", "PATCH", "COPY", "HEAD", "OPTIONS",
                                     "LINK", "UNLINK", "PURGE", "LOCK", "UNLOCK", "PROPFIND", "VIEW"};
+
+//	    const std::string methods[] = {"GET", "POST", "DELETE", "PUT", "HEAD"};
 
 	    for (int i =0; i < 15 ; ++i)
             if (method.compare(methods[i]) == 0)
