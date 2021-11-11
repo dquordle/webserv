@@ -3,6 +3,7 @@
 
 #include <sstream>
 #include <fstream>
+#include <sys/param.h>
 #include "../IHTTPMessage.interface/HTTPStructs/s_headers.hpp"
 #include "../IHTTPMessage.interface/HTTPStructs/s_startline.hpp"
 #include "../Configs/Configuration.hpp"

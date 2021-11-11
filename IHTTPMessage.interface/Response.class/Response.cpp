@@ -50,7 +50,10 @@ void Response::makeHeaders() {
 void Response::makeBodies() {
     if (_statusCode == 200)
     {
-        _route = _server->chooseRoute(_s_startline.target);
+		if (_s_startline.method == "POST")
+        	_route = _server->chooseRoutee(_s_startline.target);
+        else
+			_route = _server->chooseRoute(_s_startline.target);
         if (_route == nullptr) {
             _statusCode = 404;
         }
@@ -289,16 +292,28 @@ void Response::doPostMethod() {
         _statusCode = 404;
         return ;
     }
+	std::string body = _s_bodies._full_request.substr(_s_bodies._full_request.find("\r\n\r\n") + 4);
 	if (_route->isCGI())
 	{
-		outfile << _full_request;
+		std::string root = "/YoupiBanane";
+
+		if (!root.empty()) {
+			std::string routeName;
+
+			routeName = "/directory";
+//        if (routeName[routeName.length() - 1] != '/')
+			_s_startline.target.erase(0, routeName.length());
+			_s_startline.target.insert(0, root);
+		}
+//		outfile << _s_bodies._full_request;
+		outfile << body;
 		outfile.close();
-		CGI cgi(_route->getCGIPath(), _s_startline, _s_headers);
+		CGI cgi(_route->getCGIPath(), _s_startline, _requestHeaders);
 		_body = cgi.executeCGI();
 	}
 	else
 	{
-		outfile << _s_body;
+		outfile << body;
 		outfile.close();
 	}
 }
@@ -355,7 +370,8 @@ void Response::createResponse() {
     _response.append(getStatusLine());
     _response.append(_s_headers.getHeaders());
     _response.append("\r\n");
-    _response.append(getBody());
+	if (_s_startline.method != "HEAD") ///////////////////////////////////////////////////////////
+    	_response.append(getBody());
 }
 
 const std::string &Response::getStatusLine() const { return _statusLine; }

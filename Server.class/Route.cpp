@@ -130,3 +130,8 @@ std::string Route::getCGIPath()
 	return _cgi_path;
 }
 
+std::string Route::getCGIExt()
+{
+	return _cgi_ext;
+}
+

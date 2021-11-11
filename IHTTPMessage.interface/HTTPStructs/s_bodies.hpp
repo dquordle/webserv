@@ -7,6 +7,7 @@
 
 struct s_bodies {
 	std::vector<std::string>	bodies;
+	std::string					_full_request;
 
 //	s_bodies(const s_bodies &other) {
 //		*this = other;

@@ -25,6 +25,7 @@ public:
 	std::vector<std::string>	getNames();
 
 	Route * chooseRoute(const std::string & target);
+	Route * chooseRoutee(const std::string & target);
 
 	std::string isNonDefaultErrorPage(int statusCode) const;
 

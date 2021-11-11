@@ -105,6 +105,50 @@ std::string Server::isNonDefaultErrorPage(int statusCode) const {
 Route * Server::chooseRoute(const std::string & target) {
 	std::vector<Route>::iterator it = _routes.begin();
 	std::vector<Route>::iterator ite = _routes.end();
+
+//	for(; it != ite; it++)
+//	{
+//		if (it->isCGI())
+//		{
+//			std::string cgiExt = it->getCGIExt();
+//			if (target.find(cgiExt) == target.length() - cgiExt.length())
+//				return new Route(*it);
+//		}
+//	}
+//	it = _routes.begin();
+	int maxdepth = -1;
+	int currentdepth = -1;
+	Route ref = *it;
+
+	for (; it != ite; ++it) {
+		if (Route::findTarget((*it), target)) {
+			currentdepth = Route::nameDepth(*it);
+			if (currentdepth > maxdepth)
+			{
+				maxdepth = currentdepth;
+				ref = *it;
+			}
+		}
+	}
+	if (maxdepth == -1)
+		return nullptr;
+	return new Route(ref);
+}
+
+Route * Server::chooseRoutee(const std::string & target) {
+	std::vector<Route>::iterator it = _routes.begin();
+	std::vector<Route>::iterator ite = _routes.end();
+
+	for(; it != ite; it++)
+	{
+		if (it->isCGI())
+		{
+			std::string cgiExt = it->getCGIExt();
+			if (target.find(cgiExt) == target.length() - cgiExt.length())
+				return new Route(*it);
+		}
+	}
+	it = _routes.begin();
 	int maxdepth = -1;
 	int currentdepth = -1;
 	Route ref = *it;

@@ -14,7 +14,10 @@ CGI::~CGI() {}
 std::string	CGI::executeCGI()
 {
 	std::stringstream cgi;
-	cgi << _path << " < " << _requestStartLine.target << " > " << CGI_OUTPUT_FILE;
+	char buf[MAXPATHLEN];
+	std::string path = getwd(buf) + _requestStartLine.target;
+	cgi << _path << " < " <<  path << " > " << CGI_OUTPUT_FILE;
+	char* meth = getenv("REQUEST_METHOD");
 	system(cgi.str().c_str());
 	std::ifstream file(CGI_OUTPUT_FILE);
 	if (!file.is_open())
@@ -36,7 +39,7 @@ void CGI::setEnv() {
     _envp["GATEWAY_INTERFACE"] = "CGI/1.0"; // CGI/version
 
     _envp["SERVER_PROTOCOL"] = "HTTP/1.1"; //  HTTP/version
-    _envp["SERVER_PORT"] = _requestHeaders.getHost().substr(_requestHeaders.getHost().find(':')); // TCP port (decimal)
+    _envp["SERVER_PORT"] = _requestHeaders.getHost().substr(_requestHeaders.getHost().find(':') + 1); // TCP port (decimal)
     _envp["REQUEST_METHOD"] = _requestStartLine.method; // name of HTTP method (see above)
 //    _envp["PATH_INFO"] = ; // path suffix, if appended to URL after program name and a slash
 //    if (_envp.find("PATH_INFO") != _envp.end())
@@ -62,7 +65,10 @@ void CGI::setEnv() {
 		std::string env = it->first + "=" + it->second;
 		char cstr[env.length() + 1];
 		strcpy(cstr, env.c_str());
-		putenv(cstr);
+		int num = setenv(it->first.c_str(), it->second.c_str(), 1);
+		char* meth = getenv(it->first.c_str());
+		num = 36 + 2;
 	}
+	char* meth = getenv("REQUEST_METHOD");
 //            Variables passed by user agent (HTTP_ACCEPT, HTTP_ACCEPT_LANGUAGE, HTTP_USER_AGENT, HTTP_COOKIE and possibly others) contain values of corresponding HTTP headers and therefore have the same sense.
 }

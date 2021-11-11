@@ -80,6 +80,7 @@ public:
 
 	bool	isCGI();
 	std::string getCGIPath();
+	std::string getCGIExt();
 
 
 };
