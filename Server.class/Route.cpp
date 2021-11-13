@@ -5,6 +5,8 @@ Route::Route(const std::string & name) : _name(name)
 	_allowed_methods.push_back(GET);
 	_allowed_methods.push_back(POST);
 	_allowed_methods.push_back(DELETE);
+	_allowed_methods.push_back(HEAD);
+	_allowed_methods.push_back(PUT);
 	_autoindexOn = false;
 }
 
@@ -91,7 +93,10 @@ void Route::setMethods(const std::string &methods)
 bool Route::isMethodInVector(const std::string & methodName)  {
     Method method = Methods::getMethodStoE(methodName);
 
-    if (find(_allowed_methods.begin(), _allowed_methods.end(), method) != _allowed_methods.end())
+    std::vector<Method>::iterator it = _allowed_methods.begin();
+    std::vector<Method>::iterator ite = _allowed_methods.end();
+
+    if (find(it, ite, method) != ite)
         return true;
     return false;
 }
@@ -107,7 +112,21 @@ const std::string Route::getAllowedMethods() {
     return ret;
 }
 
-const std::string Route::getCgiExt() { return _cgi_ext; }
+bool Route::isCGI()
+{
+	if (_cgi_ext.empty() || _cgi_path.empty())
+		return false;
+	return true;
+}
 
-const std::string Route::getCgiPath() { return _cgi_path; }
+void Route::checkCgi()
+{
+	if (_cgi_path.empty() ^ _cgi_ext.empty())
+		Debug::FatalError("Configuration file error");
+}
+
+std::string Route::getCGIPath()
+{
+	return _cgi_path;
+}
 

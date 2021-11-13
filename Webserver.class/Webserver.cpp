@@ -71,6 +71,19 @@ void Webserver::start()
 {
 	Debug::Log("Start server");
 
+//	bool b;
+//	requests[0] = "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nTransfer-Encoding: chunked\r\n";
+//	b = requestIsFull(requests[0]);
+//	requests[0].append("Connection: keep-alive\r\n\r\n");
+//	b = requestIsFull(requests[0]);
+//	requests[0].append("B\r\nchunk 1\r\n\r\n\r\n");
+//	b = requestIsFull(requests[0]);
+//	requests[0].append("9\r\nchunk 2\r\n\r\n");
+//	b = requestIsFull(requests[0]);
+//	requests[0].append("0\r\n\r\n");
+//	b = requestIsFull(requests[0]);
+//	transferDecoding(0);
+//	Debug::Log(requests[0]);
 	for (;server_run;) {
 		pollStruct.makePoll(timeout_);
 		handleEvent();
@@ -140,12 +153,11 @@ void Webserver::handleConnection(int i)
 	{
 		if (requests[socket].find("Transfer-Encoding: chunked") != std::string::npos)
 			transferDecoding(socket);
-//		Debug::Log(requests[socket]);
 		Request req(requests[socket]);
 		ServersFamily family = (*families)[pollStruct.getListeningIndex(i)];
 		Server serv = family.getServerByName(req.getHost());
 		Response resp(req.getStatusCode(), req.getStartLine(), req.getHeaders(), req.getBodies(), &serv);
-		doWrite(socket, resp.getResponse());
+		doWrite(socket, resp.getResponse()); ///////// should go through poll first
 		requests[socket].clear();
 	}
 }
@@ -155,6 +167,7 @@ bool	Webserver::doRead(int socket)
 	char buf[BUFFER_SIZE];
 	std::memset(buf, 0, BUFFER_SIZE);
 	error_ = recv(socket, buf, BUFFER_SIZE - 1, 0);
+	Debug::Log(buf);
 	if (error_ <= 0) {
 		if (error_ == 0) {
 			std::string mes = std::to_string(socket) + " close connect";

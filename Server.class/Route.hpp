@@ -31,6 +31,7 @@ public:
 	void setCgiExt(const std::string& cgiExt);
 	void setSavePath(const std::string& savePath);
 	void setMethods(const std::string& methods);
+	void	checkCgi();
 
 	static bool findTarget(const Route & ref, const std::string & target) {
 	    return target.find(ref._name) != std::string::npos;
@@ -78,6 +79,9 @@ public:
 	const std::string getCgiPath();
 
 	bool isMethodInVector(const std::string & methodName);
+
+	bool	isCGI();
+	std::string getCGIPath();
 
 
 };

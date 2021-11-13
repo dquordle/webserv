@@ -8,7 +8,7 @@ Response::Response(int statusCode, const s_startline &startline, const s_headers
     _statusCode = statusCode;
 	_server = server;
 //    TODO: может переенести вставку Referer
-    _s_startline.target.insert(0, _requestHeaders.getReferer(_s_startline.target));
+_s_startline.target.insert(0, _requestHeaders.getReferer(_s_startline.target));
     setAttributes();
     createResponse();
 }
@@ -21,13 +21,13 @@ void Response::makeStartline() {
     _statusLine = "HTTP/1.1 ";
 
     std::string const arrStatus[] = {"200 OK", "301 Moved Permanently", "400 Bad Request", "403 Forbidden", "404 Not Found", "405 Method Not Allowed",
-                                     "501 Not Implemented", "505 HTTP Version Not Supported"};
+                                     "501 Not Implemented", "505 HTTP Version Not Supported", "204 No Content"};
     std::ostringstream ss;
     ss << _statusCode;
 
     std::string errorNumber = ss.str();
 
-    for (int i = 0; i < 8 ; i++)
+    for (int i = 0; i < 9 ; i++)
         if ((arrStatus[i].find(errorNumber)) != std::string::npos)
         {
             _statusLine.append(arrStatus[i]);
@@ -50,11 +50,7 @@ void Response::makeHeaders() {
 void Response::makeBodies() {
     if (_statusCode == 200)
     {
-//        TODO: isCGI
-        if (_s_startline.method == "POST")
-            _route = _server->chooseCgiRoute(_s_startline.target);
-        if (_route == nullptr || _s_startline.method != "POST")
-            _route = _server->chooseRoute(_s_startline.target);
+        _route = _server->chooseRoute(_s_startline.target);
         if (_route == nullptr) {
             _statusCode = 404;
         }
@@ -168,6 +164,9 @@ void Response::setErrorBody() {
 
 void Response::setDefaultError() {
     switch (_statusCode) {
+    	case 204:
+    		_body = error_201;
+    		break;
         case 301:
             _body = error_301;
             break;
@@ -290,21 +289,18 @@ void Response::doPostMethod() {
         _statusCode = 404;
         return ;
     }
-
-    std::vector<std::string>::iterator it = _s_bodies.bodies.begin();
-    std::vector<std::string>::iterator ite = _s_bodies.bodies.end();
-
-    for (; it != ite; ++it) {
-        outfile << (*it);
-    }
-    outfile.close();
-
-    if (!_route->getCgiPath().empty())
-    {
-        CGI cgi(_route->getCgiPath(), _s_startline, _s_headers);
-        cgi.executeCGI();
-    }
-
+	if (_route->isCGI())
+	{
+		outfile << _full_request;
+		outfile.close();
+		CGI cgi(_route->getCGIPath(), _s_startline, _s_headers);
+		_body = cgi.executeCGI();
+	}
+	else
+	{
+		outfile << _s_body;
+		outfile.close();
+	}
 }
 
 void Response::doDeleteMethod() {
@@ -367,3 +363,4 @@ const std::string &Response::getStatusLine() const { return _statusLine; }
 const std::string &Response::getBody() const { return _body; }
 
 const std::string &Response::getResponse() const {return _response; }
+
