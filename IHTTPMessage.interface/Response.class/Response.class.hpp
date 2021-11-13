@@ -14,6 +14,7 @@
 #include <dirent.h>
 #include <cstring>
 #include "../../Server.class/Server.hpp"
+#include "../../cgi/cgi.hpp"
 
 class Response : public IHTTPMessage {
 private:

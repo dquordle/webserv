@@ -4,14 +4,19 @@
 
 #include "cgi.hpp"
 
-CGI::CGI(std::string path, s_startline &startline, s_headers &headers) : _path(path), _requestStartLine(startline),
-                                                                         _requestHeaders(headers) {
+CGI::CGI(std::string path, s_startline &startline, const s_headers &headers) : _path(path), _requestStartLine(startline) {
+    _requestHeaders = headers;
     setEnv();
 }
 
 CGI::~CGI() {}
 
-void CGI::executeCGI() {}
+void CGI::executeCGI() {
+    std::map<std::string, std::string>::const_iterator it = _envp.begin();
+    for (; it != _envp.end(); it++)
+        setenv(it->first.c_str(), it->second.c_str(), 1);
+    system(_path.c_str());
+}
 
 void CGI::setEnv() {
     _envp["SERVER_SOFTWARE"] = "Egor/1.0"; // name/version of HTTP server.

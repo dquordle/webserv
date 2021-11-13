@@ -8,7 +8,7 @@ Response::Response(int statusCode, const s_startline &startline, const s_headers
     _statusCode = statusCode;
 	_server = server;
 //    TODO: может переенести вставку Referer
-_s_startline.target.insert(0, _requestHeaders.getReferer(_s_startline.target));
+    _s_startline.target.insert(0, _requestHeaders.getReferer(_s_startline.target));
     setAttributes();
     createResponse();
 }
@@ -50,7 +50,11 @@ void Response::makeHeaders() {
 void Response::makeBodies() {
     if (_statusCode == 200)
     {
-        _route = _server->chooseRoute(_s_startline.target);
+//        TODO: isCGI
+        if (_s_startline.method == "POST")
+            _route = _server->chooseCgiRoute(_s_startline.target);
+        if (_route == nullptr || _s_startline.method != "POST")
+            _route = _server->chooseRoute(_s_startline.target);
         if (_route == nullptr) {
             _statusCode = 404;
         }
@@ -294,6 +298,13 @@ void Response::doPostMethod() {
         outfile << (*it);
     }
     outfile.close();
+
+    if (!_route->getCgiPath().empty())
+    {
+        CGI cgi(_route->getCgiPath(), _s_startline, _s_headers);
+        cgi.executeCGI();
+    }
+
 }
 
 void Response::doDeleteMethod() {

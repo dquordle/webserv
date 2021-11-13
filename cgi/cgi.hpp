@@ -3,10 +3,11 @@
 
 #include "../IHTTPMessage.interface/HTTPStructs/s_headers.hpp"
 #include "../IHTTPMessage.interface/HTTPStructs/s_startline.hpp"
+#include <cstdlib>
 
 class CGI {
     public:
-        CGI(std::string path, s_startline &startline, s_headers &headers);
+    CGI(std::string path, s_startline &startline, const s_headers &headers);
         void executeCGI();
         ~CGI();
 

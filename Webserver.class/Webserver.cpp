@@ -140,7 +140,7 @@ void Webserver::handleConnection(int i)
 	{
 		if (requests[socket].find("Transfer-Encoding: chunked") != std::string::npos)
 			transferDecoding(socket);
-		Debug::Log(requests[socket]);
+//		Debug::Log(requests[socket]);
 		Request req(requests[socket]);
 		ServersFamily family = (*families)[pollStruct.getListeningIndex(i)];
 		Server serv = family.getServerByName(req.getHost());

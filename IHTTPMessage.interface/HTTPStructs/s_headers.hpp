@@ -19,7 +19,7 @@ struct s_headers {
 ////		*this = other;
 //        headers = other.headers;
 //	}
-//
+
 //	s_headers() {};
 
 //public:

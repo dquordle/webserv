@@ -91,10 +91,7 @@ void Route::setMethods(const std::string &methods)
 bool Route::isMethodInVector(const std::string & methodName)  {
     Method method = Methods::getMethodStoE(methodName);
 
-    std::vector<Method>::iterator it = _allowed_methods.begin();
-    std::vector<Method>::iterator ite = _allowed_methods.end();
-
-    if (find(it, ite, method) != ite)
+    if (find(_allowed_methods.begin(), _allowed_methods.end(), method) != _allowed_methods.end())
         return true;
     return false;
 }
@@ -109,4 +106,8 @@ const std::string Route::getAllowedMethods() {
     }
     return ret;
 }
+
+const std::string Route::getCgiExt() { return _cgi_ext; }
+
+const std::string Route::getCgiPath() { return _cgi_path; }
 
