@@ -2,6 +2,7 @@
 
 Request::Request(const std::string &request) : _request(request) {
 	_s_bodies._full_request = request;
+	_s_bodies._body = request.substr(request.find("\r\n\r\n") + 4);
     makeStartline();
     _isBody = (_request.find("\r\n\r\n") + 4 != _request.length());
     if (_statusCode == 200)

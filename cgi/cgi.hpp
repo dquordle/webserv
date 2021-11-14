@@ -4,6 +4,7 @@
 #include <sstream>
 #include <fstream>
 #include <sys/param.h>
+#include <vector>
 #include "../IHTTPMessage.interface/HTTPStructs/s_headers.hpp"
 #include "../IHTTPMessage.interface/HTTPStructs/s_startline.hpp"
 #include "../Configs/Configuration.hpp"
@@ -20,8 +21,12 @@ class CGI {
         s_startline _requestStartLine;
         std::string _path;
         std::map<std::string, std::string> _envp;
+        std::vector<std::string>		headersToSkip;
 
         void setEnv();
+        void unsetEnv();
+        std::string	getEnvName(std::string headerName);
+//        void fillHeadersVector();
 };
 
 #endif

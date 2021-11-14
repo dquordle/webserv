@@ -85,3 +85,12 @@ int PollStruct::getListeningIndex(int i)
 {
 	return indexMap[i];
 }
+
+void PollStruct::switchPolloutEvent(int index, bool set)
+{
+	if (set)
+		fds_[index].events |= POLLOUT;
+	else
+		fds_[index].events = POLLIN;
+
+}

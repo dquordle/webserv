@@ -17,7 +17,6 @@ std::string	CGI::executeCGI()
 	char buf[MAXPATHLEN];
 	std::string path = getwd(buf) + _requestStartLine.target;
 	cgi << _path << " < " <<  path << " > " << CGI_OUTPUT_FILE;
-	char* meth = getenv("REQUEST_METHOD");
 	system(cgi.str().c_str());
 	std::ifstream file(CGI_OUTPUT_FILE);
 	if (!file.is_open())
@@ -29,8 +28,8 @@ std::string	CGI::executeCGI()
 	buffer << file.rdbuf();
 	unsigned long start = buffer.str().find("\r\n\r\n") + 4;
 	std::string body = buffer.str().substr(start);
+	unsetEnv();
 	return body;
-	/////// Из файла убрать хедер, дописать свой и отправить это добро ответом;
 }
 
 void CGI::setEnv() {
@@ -59,16 +58,60 @@ void CGI::setEnv() {
     if (!_requestHeaders.getContentLength().empty())
         _envp["CONTENT_LENGTH"] = _requestHeaders.getContentLength(); // similarly, size of input data (decimal, in octets) if provided via HTTP header.
 
-	std::map<std::string, std::string>::iterator it = _envp.begin();
+
+
+	std::map<std::string, std::string>::iterator it = _requestHeaders.headers.begin();
+	for (; it != _requestHeaders.headers.end(); it++)
+	{
+		std::string envName = getEnvName(it->first);
+		envName.insert(0, "HTTP_");
+		_envp[envName] = it->second;
+	}
+
+	it = _envp.begin();
 	for (; it != _envp.end(); it++)
 	{
 		std::string env = it->first + "=" + it->second;
 		char cstr[env.length() + 1];
 		strcpy(cstr, env.c_str());
-		int num = setenv(it->first.c_str(), it->second.c_str(), 1);
-		char* meth = getenv(it->first.c_str());
-		num = 36 + 2;
+		setenv(it->first.c_str(), it->second.c_str(), 1);
 	}
-	char* meth = getenv("REQUEST_METHOD");
 //            Variables passed by user agent (HTTP_ACCEPT, HTTP_ACCEPT_LANGUAGE, HTTP_USER_AGENT, HTTP_COOKIE and possibly others) contain values of corresponding HTTP headers and therefore have the same sense.
 }
+
+void CGI::unsetEnv()
+{
+	std::map<std::string, std::string>::iterator it = _envp.begin();
+	for (; it != _envp.end(); it++)
+		unsetenv(it->first.c_str());
+}
+
+std::string CGI::getEnvName(std::string headerName)
+{
+	const char *arr = headerName.c_str();
+	std::string res;
+	for (int i = 0; i < headerName.size(); i++)
+	{
+		if (arr[i] == '-')
+			res.push_back('_');
+		else
+			res.push_back(std::toupper(arr[i]));
+	}
+	return res;
+}
+
+//void CGI::fillHeadersVector()
+//{
+//	headersToSkip.push_back("");
+//	headersToSkip.push_back("");
+//	headersToSkip.push_back("");
+//	headersToSkip.push_back("");
+//	headersToSkip.push_back("");
+//	headersToSkip.push_back("");
+//	headersToSkip.push_back("");
+//	headersToSkip.push_back("");
+//	headersToSkip.push_back("");
+//	headersToSkip.push_back("");
+//	headersToSkip.push_back("");
+//	headersToSkip.push_back("");
+//}

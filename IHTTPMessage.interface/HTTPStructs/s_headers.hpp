@@ -119,7 +119,7 @@ struct s_headers {
 
 	void setFieldName(const std::string & field) { fieldName = field.substr(0, colon); }
 
-	void setFieldValue(const std::string & field) { fieldValue = field.substr(colon + 2); } /////////////////////////////////////////////////////////
+	void setFieldValue(const std::string & field) { fieldValue = field.substr(colon + 2); }
 
 	private:
         bool isColonCorrect(const std::string & field) const {

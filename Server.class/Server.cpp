@@ -5,7 +5,7 @@ Server::Server()
 	_ip = DEFAULT_IP;
 	_portStr = DEFAULT_PORT_STR;
 	sscanf(_portStr.c_str(), "%d", &_port);
-	_is_default = false;
+//	_is_default = false;
 }
 
 void Server::setIP(const std::string& ip)
@@ -63,25 +63,24 @@ void Server::addError(const std::string & error)
 	}
 }
 
-void Server::setMaxBodySize(const std::string & sizeStr)
-{
-	if (sizeStr.empty())
-		Debug::FatalError("Configuration file error");
-	int size;
-	sscanf(sizeStr.c_str(), "%d", &size);
-	_max_body_size = size;
-
-}
+//void Server::setMaxBodySize(const std::string & sizeStr)
+//{
+//	if (sizeStr.empty())
+//		Debug::FatalError("Configuration file error");
+//	int size;
+//	sscanf(sizeStr.c_str(), "%d", &size);
+//	_max_body_size = size;
+//}
 
 void Server::addRoute(Route &route)
 {
 	_routes.push_back(route);
 }
 
-void Server::setDefault(bool isDef)
-{
-	_is_default = isDef;
-}
+//void Server::setDefault(bool isDef)
+//{
+//	_is_default = isDef;
+//}
 
 std::string Server::getIp()
 {
@@ -118,7 +117,7 @@ Route * Server::chooseRoute(const std::string & target) {
 //	it = _routes.begin();
 	int maxdepth = -1;
 	int currentdepth = -1;
-	Route ref = *it;
+	Route *ref = &(*it);
 
 	for (; it != ite; ++it) {
 		if (Route::findTarget((*it), target)) {
@@ -126,16 +125,55 @@ Route * Server::chooseRoute(const std::string & target) {
 			if (currentdepth > maxdepth)
 			{
 				maxdepth = currentdepth;
-				ref = *it;
+				ref = &(*it);
 			}
 		}
 	}
 	if (maxdepth == -1)
 		return nullptr;
-	return new Route(ref);
+	return new Route(*ref);
 }
 
-Route * Server::chooseRoutee(const std::string & target) {
+//Route * Server::chooseRoutee(const std::string & target) {
+//	std::vector<Route>::iterator it = _routes.begin();
+//	std::vector<Route>::iterator ite = _routes.end();
+//
+//	for(; it != ite; it++)
+//	{
+//		if (it->isCGI())
+//		{
+//			std::string cgiExt = it->getCGIExt();
+//			if (target.find(cgiExt) == target.length() - cgiExt.length())
+//				return new Route(*it);
+//		}
+//	}
+//	it = _routes.begin();
+//	int maxdepth = -1;
+//	int currentdepth = -1;
+//	Route ref = *it;
+//
+//	for (; it != ite; ++it) {
+//		if (Route::findTarget((*it), target)) {
+//			currentdepth = Route::nameDepth(*it);
+//			if (currentdepth > maxdepth)
+//			{
+//				maxdepth = currentdepth;
+//				ref = *it;
+//			}
+//		}
+//	}
+//	if (maxdepth == -1)
+//		return nullptr;
+//	return new Route(ref);
+//}
+
+std::vector<std::string> Server::getNames()
+{
+	return _server_names;
+}
+
+std::string Server::getCGIPath(const std::string &target)
+{
 	std::vector<Route>::iterator it = _routes.begin();
 	std::vector<Route>::iterator ite = _routes.end();
 
@@ -145,30 +183,8 @@ Route * Server::chooseRoutee(const std::string & target) {
 		{
 			std::string cgiExt = it->getCGIExt();
 			if (target.find(cgiExt) == target.length() - cgiExt.length())
-				return new Route(*it);
+				return it->getCGIPath();
 		}
 	}
-	it = _routes.begin();
-	int maxdepth = -1;
-	int currentdepth = -1;
-	Route ref = *it;
-
-	for (; it != ite; ++it) {
-		if (Route::findTarget((*it), target)) {
-			currentdepth = Route::nameDepth(*it);
-			if (currentdepth > maxdepth)
-			{
-				maxdepth = currentdepth;
-				ref = *it;
-			}
-		}
-	}
-	if (maxdepth == -1)
-		return nullptr;
-	return new Route(ref);
-}
-
-std::vector<std::string> Server::getNames()
-{
-	return _server_names;
+	return "";
 }
