@@ -24,6 +24,9 @@ private:
     std::string _body;
     Server *    _server;
     Route *     _route;
+    bool 		_isCGI;
+    std::string	_cgi_path;
+
 
 public:
     Response(int statusCode, const s_startline &startline, const s_headers &headers, const s_bodies &bodies, Server * serv);
@@ -57,6 +60,8 @@ private:
 
     const std::string &getStatusLine() const;
     const std::string &getBody() const;
+
+    void checkIfCGI();
 
 };
 

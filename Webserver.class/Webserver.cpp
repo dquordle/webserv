@@ -96,13 +96,16 @@ void Webserver::handleEvent()
 	for (int i = 0; i < pollStruct.getCount(); i++) {
 		if (pollStruct.getRevents(i) == 0)
 			continue;
-		else if ((pollStruct.getRevents(i) & POLLIN) != POLLIN) {
+		else if ((pollStruct.getRevents(i) & POLLIN) != POLLIN &&
+				(pollStruct.getRevents(i) & POLLOUT) != POLLOUT) {
 			server_run = false;
-			Debug::Log("no pollin", true);
+			Debug::Log("no pollin and no polout", true);
 			break;  ///////// throw?
 		}
 		if (pollStruct.isListenSocket(i))
 			doAccept(i);
+		else if ((pollStruct.getRevents(i) & POLLOUT) == POLLOUT)
+			doWrite(i);
 		else {
 			handleConnection(i);
 		}
@@ -157,7 +160,9 @@ void Webserver::handleConnection(int i)
 		ServersFamily family = (*families)[pollStruct.getListeningIndex(i)];
 		Server serv = family.getServerByName(req.getHost());
 		Response resp(req.getStatusCode(), req.getStartLine(), req.getHeaders(), req.getBodies(), &serv);
-		doWrite(socket, resp.getResponse()); ///////// should go through poll first
+		responses[socket] = resp.getResponse();
+		pollStruct.switchPolloutEvent(i);
+//		doWrite(socket, resp.getResponse()); ///////// should go through poll first
 		requests[socket].clear();
 	}
 }
@@ -172,6 +177,8 @@ bool	Webserver::doRead(int socket)
 		if (error_ == 0) {
 			std::string mes = std::to_string(socket) + " close connect";
 			Debug::Log(mes);
+			requests[socket].clear();
+			responses[socket].clear();
 		} else
 			Debug::Log("recv() failed", true);
 		return true;
@@ -183,10 +190,39 @@ bool	Webserver::doRead(int socket)
 
 void Webserver::doWrite(int socket, const std::string &buf)
 {
-	error_ = send(socket, &buf[0], buf.size(), 0);
-	if (error_ == -1) {
-		Debug::Log("no write", true);
+	int bytes_send = 0;
+	int to_send = 10000;
+	while (bytes_send < buf.size())
+	{
+		if (buf.size() - bytes_send < 10000)
+			to_send = buf.size() - bytes_send;
+		error_ = send(socket, &buf[bytes_send], to_send, 0);
+		if (error_ == -1) {
+			Debug::Log("no write", true);
+		}
+		bytes_send += error_;
 	}
+}
+
+void Webserver::doWrite(int ind)
+{
+	int socket = pollStruct.getSocket(ind);
+	std::string buf = responses[socket];
+//	while (bytes_send < buf.size())
+//	{
+		error_ = send(socket, &buf[0], buf.size(), 0);
+		if (error_ == -1) {
+			Debug::Log("no write", true);
+		}
+		if (error_ < buf.size())
+		{
+			responses[socket].erase(0, error_);
+			pollStruct.switchPolloutEvent(ind);
+		}
+		else
+			pollStruct.switchPolloutEvent(ind, false);
+
+//	}
 }
 
 bool Webserver::requestIsFull(const std::string& request)

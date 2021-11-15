@@ -10,8 +10,6 @@ protected:
 	s_startline _s_startline;
 	s_headers	_s_headers;
 	s_bodies	_s_bodies;
-	std::string _s_body;
-	std::string _full_request;
 	int         _statusCode;
 public:
 	virtual void makeStartline() = 0;

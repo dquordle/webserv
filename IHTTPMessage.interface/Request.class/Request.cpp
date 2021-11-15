@@ -1,7 +1,8 @@
 #include "Request.hpp"
 
 Request::Request(const std::string &request) : _request(request) {
-	_full_request = request;
+	_s_bodies._full_request = request;
+	_s_bodies._body = request.substr(request.find("\r\n\r\n") + 4);
     makeStartline();
     _isBody = (_request.find("\r\n\r\n") + 4 != _request.length());
     if (_statusCode == 200)
@@ -100,7 +101,6 @@ void Request::makeBodies()  {
 		return;
 
 	std::string bodyBegin = _request.substr(_request.find("\r\n\r\n") + 4);
-	_s_body = _request.substr(_request.find("\r\n\r\n") + 4);
 	//	TODO: isBodyLimit - проверить что не был ограничен размер на максимальный размер запроса, если размер тела превышает его то - HTTP 413 (Request Entity Too Large Error)
     std::vector<std::string> vSplit = splitVector(bodyBegin);
 

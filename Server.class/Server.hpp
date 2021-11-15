@@ -25,9 +25,11 @@ public:
 	std::vector<std::string>	getNames();
 
 	Route * chooseRoute(const std::string & target);
-	Route * chooseCgiRoute(const std::string & target);
+//	Route * chooseRoutee(const std::string & target);
 
 	std::string isNonDefaultErrorPage(int statusCode) const;
+
+	std::string					getCGIPath(const std::string & target);
 
 
 private:
