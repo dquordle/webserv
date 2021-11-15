@@ -5,7 +5,10 @@ Route::Route(const std::string & name) : _name(name)
 	_allowed_methods.push_back(GET);
 	_allowed_methods.push_back(POST);
 	_allowed_methods.push_back(DELETE);
+	_allowed_methods.push_back(HEAD);
+	_allowed_methods.push_back(PUT);
 	_autoindexOn = false;
+	_max_body_size = 0;
 }
 
 Route::~Route() {}
@@ -108,5 +111,42 @@ const std::string Route::getAllowedMethods() {
         ret.append(", ");
     }
     return ret;
+}
+
+bool Route::isCGI()
+{
+	if (_cgi_ext.empty() || _cgi_path.empty())
+		return false;
+	return true;
+}
+
+void Route::checkCgi()
+{
+	if (_cgi_path.empty() ^ _cgi_ext.empty())
+		Debug::FatalError("Configuration file error");
+}
+
+std::string Route::getCGIPath()
+{
+	return _cgi_path;
+}
+
+std::string Route::getCGIExt()
+{
+	return _cgi_ext;
+}
+
+void Route::setMaxBodySize(const std::string &sizeStr)
+{
+	if (sizeStr.empty())
+		Debug::FatalError("Configuration file error");
+	int size;
+	sscanf(sizeStr.c_str(), "%d", &size);
+	_max_body_size = size;
+}
+
+size_t Route::getMaxBodySize()
+{
+	return _max_body_size;
 }
 

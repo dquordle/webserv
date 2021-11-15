@@ -17,6 +17,7 @@ private:
 	std::string				_cgi_path;
 	std::string				_cgi_ext;
 	std::string				_save_path;
+	size_t 					_max_body_size;
 	std::vector<Method>		_allowed_methods;
 
 public:
@@ -30,7 +31,9 @@ public:
 	void setCgiPath(const std::string& cgiPath);
 	void setCgiExt(const std::string& cgiExt);
 	void setSavePath(const std::string& savePath);
+	void setMaxBodySize(const std::string & size);
 	void setMethods(const std::string& methods);
+	void	checkCgi();
 
 	static bool findTarget(const Route & ref, const std::string & target) {
 	    return target.find(ref._name) != std::string::npos;
@@ -45,7 +48,7 @@ public:
 	}
 
 	Route(const Route & rhs) : _name(rhs._name), _redirection(rhs._redirection), _directory(rhs._directory), _autoindexOn(rhs._autoindexOn),
-	_index_file(rhs._index_file), _cgi_path(rhs._cgi_path), _cgi_ext(rhs._cgi_ext), _save_path(rhs._save_path)
+	_index_file(rhs._index_file), _cgi_path(rhs._cgi_path), _cgi_ext(rhs._cgi_ext), _save_path(rhs._save_path), _max_body_size(rhs._max_body_size)
 	{
         _allowed_methods = rhs._allowed_methods;
 	}
@@ -76,6 +79,11 @@ public:
 	const std::string getAllowedMethods();
 
 	bool isMethodInVector(const std::string & methodName);
+
+	bool	isCGI();
+	std::string getCGIPath();
+	std::string getCGIExt();
+	size_t		getMaxBodySize();
 
 
 };

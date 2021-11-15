@@ -18,6 +18,7 @@ private:
 	int                 			timeout_;
 	bool                			compress_;
 	std::map<int, std::string>		requests;
+	std::map<int, std::string>		responses;
 
 
 
@@ -44,6 +45,8 @@ private:
 
 	bool	requestIsFull(const std::string& request);
 	void	transferDecoding(int socket);
+
+	void	doWrite(int socket);
 };
 
 

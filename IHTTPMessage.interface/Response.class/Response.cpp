@@ -21,13 +21,13 @@ void Response::makeStartline() {
     _statusLine = "HTTP/1.1 ";
 
     std::string const arrStatus[] = {"200 OK", "301 Moved Permanently", "400 Bad Request", "403 Forbidden", "404 Not Found", "405 Method Not Allowed",
-                                     "501 Not Implemented", "505 HTTP Version Not Supported"};
+                                     "501 Not Implemented", "505 HTTP Version Not Supported", "204 No Content", "413 Request Entity Too Large"};
     std::ostringstream ss;
     ss << _statusCode;
 
     std::string errorNumber = ss.str();
 
-    for (int i = 0; i < 8 ; i++)
+    for (int i = 0; i < 10 ; i++)
         if ((arrStatus[i].find(errorNumber)) != std::string::npos)
         {
             _statusLine.append(arrStatus[i]);
@@ -50,7 +50,7 @@ void Response::makeHeaders() {
 void Response::makeBodies() {
     if (_statusCode == 200)
     {
-        _route = _server->chooseRoute(_s_startline.target);
+		_route = _server->chooseRoute(_s_startline.target);
         if (_route == nullptr) {
             _statusCode = 404;
         }
@@ -61,6 +61,9 @@ void Response::makeBodies() {
             else if (!_route->getRedirection().empty()) {
                 _statusCode = 301;
             }
+            else if (_route->getMaxBodySize() != 0 && _s_bodies._body.size() > _route->getMaxBodySize())
+            	_statusCode = 413;
+            checkIfCGI();
         }
     }
     if (_statusCode == 200)
@@ -164,6 +167,9 @@ void Response::setErrorBody() {
 
 void Response::setDefaultError() {
     switch (_statusCode) {
+    	case 204:
+    		_body = error_201;
+    		break;
         case 301:
             _body = error_301;
             break;
@@ -277,23 +283,43 @@ void Response::getFile(std::string & path) {
 void Response::doPostMethod() {
 
     std::string filename = _s_startline.target;
-    filename.erase(0, filename.find_last_of('/'));
-    filename.insert(0, _route->getSavePath());
-    filename.erase(0, 1);
+    if (!_isCGI)
+	{
+		filename.erase(0, filename.find_last_of('/'));
+		filename.insert(0, _route->getSavePath());
+	}
+	filename.erase(0, 1);
+
 
     std::ofstream	outfile(filename);
     if (!outfile) {
         _statusCode = 404;
         return ;
     }
+	std::string body = _s_bodies._full_request.substr(_s_bodies._full_request.find("\r\n\r\n") + 4);
+	if (_isCGI)
+	{
+//		std::string root = "/YoupiBanane";
 
-    std::vector<std::string>::iterator it = _s_bodies.bodies.begin();
-    std::vector<std::string>::iterator ite = _s_bodies.bodies.end();
-
-    for (; it != ite; ++it) {
-        outfile << (*it);
-    }
-    outfile.close();
+//		if (!root.empty()) {
+//			std::string routeName;
+//
+//			routeName = "/directory";
+//        if (routeName[routeName.length() - 1] != '/')
+//			_s_startline.target.erase(0, routeName.length());
+//			_s_startline.target.insert(0, root);
+//		}
+//		outfile << _s_bodies._full_request;
+		outfile << body;
+		outfile.close();
+		CGI cgi(_cgi_path, _s_startline, _requestHeaders);
+		_body = cgi.executeCGI();
+	}
+	else
+	{
+		outfile << body;
+		outfile.close();
+	}
 }
 
 void Response::doDeleteMethod() {
@@ -348,7 +374,8 @@ void Response::createResponse() {
     _response.append(getStatusLine());
     _response.append(_s_headers.getHeaders());
     _response.append("\r\n");
-    _response.append(getBody());
+	if (_s_startline.method != "HEAD") ///////////////////////////////////////////////////////////
+    	_response.append(getBody());
 }
 
 const std::string &Response::getStatusLine() const { return _statusLine; }
@@ -356,3 +383,11 @@ const std::string &Response::getStatusLine() const { return _statusLine; }
 const std::string &Response::getBody() const { return _body; }
 
 const std::string &Response::getResponse() const {return _response; }
+
+void Response::checkIfCGI()
+{
+	_cgi_path = _server->getCGIPath(_s_startline.target);
+	if (!_cgi_path.empty())
+		_isCGI = true;
+}
+

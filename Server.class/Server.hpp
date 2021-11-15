@@ -17,16 +17,19 @@ public:
 	void 						setPort(const std::string& port);
 	void 						setServerName(const std::string& name);
 	void 						addError(const std::string & error);
-	void 						setMaxBodySize(const std::string & size);
+//	void 						setMaxBodySize(const std::string & size);
 	void 						addRoute(Route & route);
-	void 						setDefault(bool isDef);
+//	void 						setDefault(bool isDef);
 	std::string					getIp();
 	std::string					getPortStr();
 	std::vector<std::string>	getNames();
 
 	Route * chooseRoute(const std::string & target);
+//	Route * chooseRoutee(const std::string & target);
 
 	std::string isNonDefaultErrorPage(int statusCode) const;
+
+	std::string					getCGIPath(const std::string & target);
 
 
 private:
@@ -34,9 +37,8 @@ private:
 	std::string					_portStr;
 	int 						_port;
 	std::vector<std::string>	_server_names;
-	bool						_is_default;       /////pointless
 	std::map<int, std::string>	_errors;
-	int 						_max_body_size;
+//	int 						_max_body_size;
 	std::vector<Route>			_routes;
 };
 

@@ -1,6 +1,8 @@
 #include "Request.hpp"
 
 Request::Request(const std::string &request) : _request(request) {
+	_s_bodies._full_request = request;
+	_s_bodies._body = request.substr(request.find("\r\n\r\n") + 4);
     makeStartline();
     _isBody = (_request.find("\r\n\r\n") + 4 != _request.length());
     if (_statusCode == 200)
@@ -103,7 +105,7 @@ void Request::makeBodies()  {
     std::vector<std::string> vSplit = splitVector(bodyBegin);
 
     _s_bodies.bodies = vSplit;
-    if (this->_s_bodies.bodies.empty())
+    if (this->_s_bodies.bodies.empty()) ///wat?
 		this->_s_bodies.bodies.clear();
 }
 

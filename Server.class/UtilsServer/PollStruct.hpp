@@ -44,6 +44,8 @@ public:
 
 	void setReventsZero(int index);
 
+	void switchPolloutEvent(int index, bool set = true);
+
 	int	getListeningIndex(int i);
 
 private:

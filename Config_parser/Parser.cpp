@@ -35,7 +35,7 @@ void Parser::putServerToFamily(std::vector<ServersFamily> *families, Server &ser
 		}
 	}
 	ServersFamily family(server.getIp(), server.getPortStr());
-	server.setDefault(true);
+//	server.setDefault(true);
 	family.addServer(server);
 	families->push_back(family);
 }
@@ -74,8 +74,8 @@ void Parser::putFieldIntoHost(Server & server, const std::string& key, const std
 		server.setServerName(value);
 	else if (key == "error_page")
 		server.addError(value);
-	else if (key == "limit_body_size")
-		server.setMaxBodySize(value);
+//	else if (key == "limit_body_size")
+//		server.setMaxBodySize(value);
 	else
 		Debug::FatalError("Configuration file error");
 }
@@ -108,7 +108,10 @@ Route *Parser::parseRoute(std::ifstream &ifs, const std::string& name)
 	while (!str.empty())
 	{
 		if (str == "}")
+		{
+			route->checkCgi();
 			return route;
+		}
 		unsigned long pos = str.find(':');
 		if (pos == std::string::npos)
 			Debug::FatalError("Configuration file error");
@@ -137,6 +140,8 @@ void Parser::putFieldIntoRoute(Route &route, const std::string &key, const std::
 		route.setCgiPath(value);
 	else if (key == "cgi_ext")
 		route.setCgiExt(value);
+	else if (key == "limit_body_size")
+		route.setMaxBodySize(value);
 	else
 		Debug::FatalError("Configuration file error");
 }
