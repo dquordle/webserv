@@ -22,7 +22,7 @@ private:
 
 public:
 	explicit Route(const std::string & name);
-	~Route();
+	virtual ~Route();
 
 	void setRedirection(const std::string& redirection);
 	void setDirectory(const std::string& directory);

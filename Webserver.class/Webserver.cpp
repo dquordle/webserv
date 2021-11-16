@@ -35,8 +35,7 @@ int Webserver::socketInit() {
 }
 
 void Webserver::socketReusable(int sock) {
-	int flagsOn_;
-	error_ = setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, (char *)&flagsOn_, sizeof(int));
+	setsockopt(sock, SOL_SOCKET, SO_REUSEADDR, &error_, sizeof(int));
 
 	if (error_ < 0) {
 		close(sock);
@@ -172,7 +171,7 @@ bool	Webserver::doRead(int socket)
 	char buf[BUFFER_SIZE];
 	std::memset(buf, 0, BUFFER_SIZE);
 	error_ = recv(socket, buf, BUFFER_SIZE - 1, 0);
-	Debug::Log(buf);
+//	Debug::Log(buf);
 	if (error_ <= 0) {
 		if (error_ == 0) {
 			std::string mes = std::to_string(socket) + " close connect";

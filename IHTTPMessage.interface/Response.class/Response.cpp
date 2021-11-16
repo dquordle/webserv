@@ -1,7 +1,7 @@
 #include "Response.class.hpp"
 #include <fstream>
 
-Response::Response(int statusCode, const s_startline &startline, const s_headers &headers, const s_bodies &bodies, Server * server) {
+Response::Response(int statusCode, const s_startline &startline, const s_headers &headers, const s_bodies &bodies, Server * server) : _isCGI(false) {
     _s_startline = startline;
     _requestHeaders = headers;
     _s_bodies = bodies;

@@ -101,20 +101,6 @@ std::string Server::isNonDefaultErrorPage(int statusCode) const {
 	return it->second;
 }
 
-Route * Server::chooseCgiRoute(const std::string & target) {
-    std::vector<Route>::iterator it = _routes.begin();
-    size_t extension;
-
-    for (; it != _routes.end(); ++it) {
-        if (!it->getCgiPath().empty()) {
-            if ((extension = target.find_last_of(it->getCgiExt())) != std::string::npos)
-                if (extension + 1 == target.length())
-                    return new Route((*it));
-        }
-    }
-    return nullptr;
-}
-
 Route * Server::chooseRoute(const std::string & target) {
 	std::vector<Route>::iterator it = _routes.begin();
 	std::vector<Route>::iterator ite = _routes.end();
@@ -145,7 +131,8 @@ Route * Server::chooseRoute(const std::string & target) {
 	}
 	if (maxdepth == -1)
 		return nullptr;
-	return new Route(*ref);
+//	return new Route(*ref);
+	return ref;
 }
 
 //Route * Server::chooseRoutee(const std::string & target) {
