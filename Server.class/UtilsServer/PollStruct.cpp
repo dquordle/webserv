@@ -74,6 +74,7 @@ void PollStruct::compress() {
             nfds_--;
         }
     }
+	current_size_ = nfds_;
 }
 
 void PollStruct::setReventsZero(int index)
@@ -93,4 +94,9 @@ void PollStruct::switchPolloutEvent(int index, bool set)
 	else
 		fds_[index].events = POLLIN;
 
+}
+
+int PollStruct::getEvents(int index)
+{
+	return fds_[index].events;
 }

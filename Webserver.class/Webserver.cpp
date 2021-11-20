@@ -59,7 +59,7 @@ void Webserver::socketBind(int sock, ServersFamily& family)
 }
 
 void Webserver::socketListening(int sock) {
-	error_ = listen(sock, 10);
+	error_ = listen(sock, 1000);
 	if (error_ == -1) {
 		close(sock);
 		Debug::FatalError("listen function returned error", &pollStruct);
@@ -84,6 +84,7 @@ void Webserver::start()
 //	transferDecoding(0);
 //	Debug::Log(requests[0]);
 	for (;server_run;) {
+//		Debug::Log("POLL");
 		pollStruct.makePoll(timeout_);
 		handleEvent();
 	}
@@ -98,6 +99,10 @@ void Webserver::handleEvent()
 		else if ((pollStruct.getRevents(i) & POLLIN) != POLLIN &&
 				(pollStruct.getRevents(i) & POLLOUT) != POLLOUT) {
 			server_run = false;
+			Debug::Log("SOCKET " + std::to_string(i));
+			for (int j = 0; j < pollStruct.getCount(); j++) {
+				Debug::Log("socket " + std::to_string(pollStruct.getSocket(j)) + " events " + std::to_string(pollStruct.getEvents(j)) + " revents " + std::to_string(pollStruct.getRevents(i)));
+			}
 			Debug::Log("no pollin and no polout", true);
 			break;  ///////// throw?
 		}
@@ -110,8 +115,10 @@ void Webserver::handleEvent()
 		}
 		pollStruct.setReventsZero(i);
 		if (compress_) {
+//			Debug::Log("COMPRESS");
 			compress_ = false;
 			pollStruct.compress();
+			i--;
 		}
 	}
 }
@@ -119,7 +126,7 @@ void Webserver::handleEvent()
 void Webserver::doAccept(int i)
 {
 	int acceptFD;
-	Debug::Log("new connect");
+//	Debug::Log("new connect");
 	int sock = pollStruct.getSocket(i);
 	ServersFamily family = (*families)[i];
 	acceptFD = accept(sock, family.getSockAddr(), family.getSockAddrSize());
@@ -148,7 +155,7 @@ void Webserver::handleConnection(int i)
 	if (closeConnection) {
 		pollStruct.closeConnection(i);
 		compress_ = true;
-		requests.erase(socket);
+		requests[socket].clear();
 		return;
 	}
 	if (requestIsFull(requests[socket]))
@@ -161,7 +168,7 @@ void Webserver::handleConnection(int i)
 		Response resp(req.getStatusCode(), req.getStartLine(), req.getHeaders(), req.getBodies(), &serv);
 		responses[socket] = resp.getResponse();
 		pollStruct.switchPolloutEvent(i);
-//		doWrite(socket, resp.getResponse()); ///////// should go through poll first
+//		doWrite(i);
 		requests[socket].clear();
 	}
 }
@@ -175,7 +182,7 @@ bool	Webserver::doRead(int socket)
 	if (error_ <= 0) {
 		if (error_ == 0) {
 			std::string mes = std::to_string(socket) + " close connect";
-			Debug::Log(mes);
+//			Debug::Log(mes);
 			requests[socket].clear();
 			responses[socket].clear();
 		} else
@@ -187,21 +194,21 @@ bool	Webserver::doRead(int socket)
 	return false;
 }
 
-void Webserver::doWrite(int socket, const std::string &buf)
-{
-	int bytes_send = 0;
-	int to_send = 10000;
-	while (bytes_send < buf.size())
-	{
-		if (buf.size() - bytes_send < 10000)
-			to_send = buf.size() - bytes_send;
-		error_ = send(socket, &buf[bytes_send], to_send, 0);
-		if (error_ == -1) {
-			Debug::Log("no write", true);
-		}
-		bytes_send += error_;
-	}
-}
+//void Webserver::doWrite(int socket, const std::string &buf)
+//{
+//	int bytes_send = 0;
+//	int to_send = 10000;
+//	while (bytes_send < buf.size())
+//	{
+//		if (buf.size() - bytes_send < 10000)
+//			to_send = buf.size() - bytes_send;
+//		error_ = send(socket, &buf[bytes_send], to_send, 0);
+//		if (error_ == -1) {
+//			Debug::Log("no write", true);
+//		}
+//		bytes_send += error_;
+//	}
+//}
 
 void Webserver::doWrite(int ind)
 {

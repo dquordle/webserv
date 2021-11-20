@@ -48,6 +48,8 @@ public:
 
 	int	getListeningIndex(int i);
 
+	int getEvents(int i);
+
 private:
 
 };
