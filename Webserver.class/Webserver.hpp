@@ -41,8 +41,6 @@ private:
 
 	bool	doRead(int socket);
 
-	void	doWrite(int socket, const std::string & buf);
-
 	bool	requestIsFull(const std::string& request);
 	void	transferDecoding(int socket);
 
