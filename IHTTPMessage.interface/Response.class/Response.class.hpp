@@ -26,6 +26,7 @@ private:
     Route *     _route;
     bool 		_isCGI;
     std::string	_cgi_path;
+	static int	_cookie_num;
 
 
 public:
@@ -47,6 +48,7 @@ private:
     void setContentType();
     void setLocation();
     void setServerName();
+    void setCookie();
 
     void setDefaultError();
     void setErrorBody();

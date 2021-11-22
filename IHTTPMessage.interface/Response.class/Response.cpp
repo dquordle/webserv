@@ -1,6 +1,8 @@
 #include "Response.class.hpp"
 #include <fstream>
 
+int Response::_cookie_num = 0;
+
 Response::Response(int statusCode, const s_startline &startline, const s_headers &headers, const s_bodies &bodies, Server * server) : _isCGI(false) {
     _s_startline = startline;
     _requestHeaders = headers;
@@ -41,6 +43,7 @@ void Response::makeHeaders() {
 //    setContentType();
     setContentLength();
     setServerName();
+	setCookie();
     if (_statusCode == 405)
         _s_headers.headers.insert(std::pair<std::string, std::string>("Allow:", _route->getAllowedMethods()));
     if (_statusCode == 301)
@@ -265,6 +268,13 @@ void Response::getFolder(std::string & path) {
 }
 
 void Response::getFile(std::string & path) {
+	if (path == "cookie_test")
+	{
+		_s_headers.headers.insert(std::pair<std::string, std::string>("Content-Type", "text/html"));
+		if (_requestHeaders.headers.find("Cookie") != _requestHeaders.headers.end())
+			path.append("2");
+	}
+
     std::ifstream file(path);
 
     if (file.is_open()) {
@@ -374,7 +384,7 @@ void Response::createResponse() {
     _response.append(getStatusLine());
     _response.append(_s_headers.getHeaders());
     _response.append("\r\n");
-	if (_s_startline.method != "HEAD") ///////////////////////////////////////////////////////////
+	if (_s_startline.method != "HEAD")
     	_response.append(getBody());
 }
 
@@ -389,5 +399,14 @@ void Response::checkIfCGI()
 	_cgi_path = _server->getCGIPath(_s_startline.target);
 	if (!_cgi_path.empty())
 		_isCGI = true;
+}
+
+void Response::setCookie()
+{
+	std::map<std::string, std::string>::iterator it = _requestHeaders.headers.find("Cookie");
+	if (it == _requestHeaders.headers.end())
+		_s_headers.headers.insert(std::pair<std::string, std::string>("Set-Cookie", "SessionId = " + std::to_string(_cookie_num++)));
+	else
+		_s_headers.headers.insert(std::pair<std::string, std::string>(it->first, it->second));
 }
 
