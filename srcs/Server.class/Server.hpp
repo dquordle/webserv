@@ -5,7 +5,7 @@
 #include <map>
 #include <arpa/inet.h>
 #include "Route.hpp"
-#include "../../Configs/Configuration.hpp"
+#include "../Webserver.class/Configuration.hpp"
 
 class Server
 {

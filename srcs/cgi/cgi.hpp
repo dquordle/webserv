@@ -7,7 +7,7 @@
 #include <vector>
 #include "../IHTTPMessage.interface/HTTPStructs/s_headers.hpp"
 #include "../IHTTPMessage.interface/HTTPStructs/s_startline.hpp"
-#include "../../Configs/Configuration.hpp"
+#include "../Webserver.class/Configuration.hpp"
 #include "../Debug.class/Debug.hpp"
 
 class CGI {

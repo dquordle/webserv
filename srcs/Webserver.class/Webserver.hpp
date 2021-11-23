@@ -5,7 +5,7 @@
 #include <fcntl.h>
 #include "../Config_parser/Parser.hpp"
 #include "../Server.class/UtilsServer/PollStruct.hpp"
-#include "../../Configs/Configuration.hpp"
+#include "Configuration.hpp"
 
 class Webserver
 {

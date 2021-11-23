@@ -37,7 +37,8 @@ TESTER_DIR= put_test directory YoupiBanane/Yeah YoupiBanane/nop save_path
 TESTER_FILES= $(addprefix $(WEBSERV_DIR)YoupiBanane/, youpi.bla youpi.bad_extension /Yeah/not_happy.bad_extension /nop/other.pouic nop/youpi.bad_extension)
 
 # INCLUDES
-INCLUDES_STRUCTS = $(addprefix IHTTPMessage.interface/HTTPStructs/, s_bodies.hpp s_headers.hpp s_startline.hpp)
+INCLUDES_STRUCTS = $(addprefix IHTTPMessage.interface/HTTPStructs/, s_bodies.hpp s_headers.hpp s_startline.hpp) \
+	Webserver.class/Configuration.hpp IHTTPMessage.interface/Response.class/errorResponse.hpp
 INCLUDES = $(addprefix srcs/, $(filter-out main.hpp, $(SRCS:.cpp=.hpp)) $(INCLUDES_STRUCTS) )
 
 # OBJECT FILES
@@ -47,7 +48,7 @@ all: $(NAME)
 
 $(BIN_DIR)%.o: $(SRCS_DIR)%.cpp $(INCLUDES)
 	mkdir -p $(dir $@)
-	$(CXX) $(CPPFLAGS) -MMD -c $< -o $@
+	$(CXX) $(CPPFLAGS) -c $< -o $@
 
 $(NAME): $(OBJS)
 	$(CXX) $(CPPFLAGS) $^ -o $@
@@ -72,6 +73,6 @@ fclean:
 re: fclean
 	$(MAKE) all
 
-#.SILENT:
+.SILENT:
 
 .PHONY: all clean fclean re
