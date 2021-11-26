@@ -8,10 +8,6 @@ struct s_startline {
 	std::string target;
 	std::string version;
 
-//	s_startline(const s_startline &other) {
-//		*this = other;
-//	}
-
 	s_startline &operator=(const s_startline &other) {
 		this->method = other.method;
 		this->target = other.target;
@@ -26,10 +22,10 @@ struct s_startline {
 	}
 
     bool isMethodImplemented() const {
-	    const std::string methods[] = {"GET", "POST", "DELETE", "PUT", "PATCH", "COPY", "HEAD", "OPTIONS",
-                                    "LINK", "UNLINK", "PURGE", "LOCK", "UNLOCK", "PROPFIND", "VIEW"};
 
-//	    const std::string methods[] = {"GET", "POST", "DELETE", "PUT", "HEAD"};
+
+
+	    const std::string methods[] = {"GET", "POST", "DELETE", "PUT", "HEAD"};
 
 	    for (int i =0; i < 15 ; ++i)
             if (method.compare(methods[i]) == 0)

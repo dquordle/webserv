@@ -35,7 +35,7 @@ void Parser::putServerToFamily(std::vector<ServersFamily> *families, Server &ser
 		}
 	}
 	ServersFamily family(server.getIp(), server.getPortStr());
-//	server.setDefault(true);
+
 	family.addServer(server);
 	families->push_back(family);
 }
@@ -75,8 +75,6 @@ void Parser::putFieldIntoHost(Server & server, const std::string& key, const std
 		server.setServerName(value);
 	else if (key == "error_page")
 		server.addError(value);
-//	else if (key == "limit_body_size")
-//		server.setMaxBodySize(value);
 	else
 		Debug::FatalError("Configuration file error");
 }

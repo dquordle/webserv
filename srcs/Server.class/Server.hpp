@@ -25,7 +25,6 @@ public:
 	std::vector<std::string>	getNames();
 
 	Route * chooseRoute(const std::string & target);
-//	Route * chooseRoutee(const std::string & target);
 
 	std::string isNonDefaultErrorPage(int statusCode) const;
 
@@ -37,7 +36,7 @@ private:
 	std::string					_portStr;
 	int 						_port;
 	std::vector<std::string>	_server_names;
-	bool						_is_default;       /////pointless
+	bool						_is_default;
 	std::map<int, std::string>	_errors;
 	int 						_max_body_size;
 	std::vector<Route>			_routes;

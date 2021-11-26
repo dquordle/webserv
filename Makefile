@@ -58,9 +58,6 @@ prepare:
 	mkdir -p $(addprefix $(WEBSERV_DIR), $(TESTER_DIR))
 	$(foreach var, $(TESTER_FILES), echo > $(var);)
 
-run: prepare
-	./$(NAME) Configs/g_doggy.conf
-
 clean:
 	$(RM) $(BIN_DIR)
 	echo "object files ${RED}are deleted${ENDCOLOR}"

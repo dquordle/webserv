@@ -13,6 +13,7 @@
 #include <sys/param.h>
 #include <dirent.h>
 #include <cstring>
+#include <fstream>
 #include "../../Server.class/Server.hpp"
 #include "../../cgi/cgi.hpp"
 
@@ -45,7 +46,6 @@ private:
     void setAttributes();
     void setDate();
     void setContentLength();
-    void setContentType();
     void setLocation();
     void setServerName();
     void setCookie();

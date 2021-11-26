@@ -1,5 +1,4 @@
 #include "Response.hpp"
-#include <fstream>
 
 int Response::_cookie_num = 0;
 
@@ -9,8 +8,7 @@ Response::Response(int statusCode, const s_startline &startline, const s_headers
     _s_bodies = bodies;
     _statusCode = statusCode;
 	_server = server;
-//    TODO: может переенести вставку Referer
-_s_startline.target.insert(0, _requestHeaders.getReferer(_s_startline.target));
+    _s_startline.target.insert(0, _requestHeaders.getReferer(_s_startline.target));
     setAttributes();
     createResponse();
 }
@@ -40,7 +38,6 @@ void Response::makeStartline() {
 
 void Response::makeHeaders() {
     setDate();
-//    setContentType();
     setContentLength();
     setServerName();
 	setCookie();
@@ -90,7 +87,7 @@ void Response::rewriteTargetIfRoot() {
         std::string routeName;
 
         routeName = _route->getName();
-//        if (routeName[routeName.length() - 1] != '/')
+        if (routeName[routeName.length() - 1] != '/')
             _s_startline.target.erase(0, routeName.length());
         _s_startline.target.insert(0, root);
     }
@@ -145,7 +142,6 @@ void Response::setLocation() {
  */
 
 void Response::setErrorBody() {
-//    TODO: подумать про самопроверку
     std::string err;
 
     err = _server->isNonDefaultErrorPage(_statusCode);
@@ -259,20 +255,17 @@ void Response::getFolder(std::string & path) {
                     path.append("/");
                 getFile(path.append(_route->getIndexFile()));
             }
-//            if (_statusCode == 404)
-//                _statusCode = 403;
         }
         closedir (dir);
     } else
-        _statusCode = 403; // может заменить на 500 internal server error, a 403 при EACCES
+        _statusCode = 403;
 }
 
 void Response::getFile(std::string & path) {
-	if (path == "cookie_test")
+	if (path == "cookie_test.html")
 	{
-		_s_headers.headers.insert(std::pair<std::string, std::string>("Content-Type", "text/html"));
 		if (_requestHeaders.headers.find("Cookie") != _requestHeaders.headers.end())
-			path.append("2");
+			path = "cookie_test2.html";
 	}
 
     std::ifstream file(path);
@@ -309,17 +302,6 @@ void Response::doPostMethod() {
 	std::string body = _s_bodies._full_request.substr(_s_bodies._full_request.find("\r\n\r\n") + 4);
 	if (_isCGI)
 	{
-//		std::string root = "/YoupiBanane";
-
-//		if (!root.empty()) {
-//			std::string routeName;
-//
-//			routeName = "/directory";
-//        if (routeName[routeName.length() - 1] != '/')
-//			_s_startline.target.erase(0, routeName.length());
-//			_s_startline.target.insert(0, root);
-//		}
-//		outfile << _s_bodies._full_request;
 		outfile << body;
 		outfile.close();
 		CGI cgi(_cgi_path, _s_startline, _requestHeaders);
@@ -340,7 +322,6 @@ void Response::doDeleteMethod() {
 
     if (remove((filename.erase(0, 1)).c_str()) == 0) {
         _statusCode = 200;
-//        _body = "File is deleted";
         return ;
     }
     _statusCode = 404;
@@ -353,26 +334,8 @@ void Response::doDeleteMethod() {
 void Response::setContentLength() {
     std::ostringstream contentLength;
 
-//    if (_statusCode / 100 == 1 || _statusCode == 204) // такие коды не используются
-//        return ;
     contentLength << _body.length();
     _s_headers.headers.insert(std::pair<std::string, std::string>("Content-Length", contentLength.str()));
-
-}
-
-void Response::setContentType() {
-    if (_statusCode != 200) {
-        _s_headers.headers.insert(std::pair<std::string, std::string>("Content-Type", "text/html"));
-        return;
-    }
-
-    size_t startOfType = _s_startline.target.find_last_of('.');
-    std::string contentType_;
-
-    if (startOfType != std::string::npos)
-        contentType_ = _s_startline.target.substr(startOfType + 1, _s_startline.target.length());
-
-    _s_headers.headers.insert(std::pair<std::string, std::string>("Content-Type", contentType_));
 
 }
 

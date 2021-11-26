@@ -24,14 +24,14 @@ void PollStruct::makePoll(int timeout) {
 
     ret = poll(fds_, nfds_, timeout);
 	if (ret < 0) {
-//	    throw PollStruct::ServerException("poll() failed");
+
 		Debug::FatalError("poll function returned error", this);
 	}
 	if (ret == 0) {
-//	    TODO: настроить poll если time out
+
         Debug::Log("timeout", true);
         Debug::FatalError("poll function timed out", this);
-//        throw PollStruct::ServerException("poll() timeout");
+
 	}
 	current_size_ = nfds_;
 }
@@ -41,7 +41,7 @@ int PollStruct::getRevents(int i) const {
 }
 
 bool PollStruct::isListenSocket(const int i) const {
-//	return fds_[i].fd == listen_sd;
+
 	return i <= max_listen_sd;
 }
 

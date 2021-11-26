@@ -150,3 +150,38 @@ size_t Route::getMaxBodySize()
 	return _max_body_size;
 }
 
+int Route::nameDepth(const Route & ref) {
+    int ret = 0;
+
+    if (ref._name != "/")
+        ret = std::count(ref._name.begin(), ref._name.end(), '/');
+    return ret;
+}
+
+Route::Route(const Route & rhs) : _name(rhs._name), _redirection(rhs._redirection), _directory(rhs._directory), _autoindexOn(rhs._autoindexOn),
+                           _index_file(rhs._index_file), _cgi_path(rhs._cgi_path), _cgi_ext(rhs._cgi_ext), _save_path(rhs._save_path), _max_body_size(rhs._max_body_size)
+{
+    _allowed_methods = rhs._allowed_methods;
+}
+
+bool Route::findTarget(const Route & ref, const std::string & target) {
+    return target.find(ref._name) != std::string::npos;
+}
+
+Route & Route::operator=(const Route & rhs) {
+    if (&rhs == this)
+        return *this;
+    _name = rhs._name;
+    _redirection = rhs._redirection;
+    _directory = rhs._directory;
+    _autoindexOn = rhs._autoindexOn;
+    _index_file = rhs._index_file;
+    _cgi_path = rhs._cgi_path;
+    _cgi_ext = rhs._cgi_ext;
+    _save_path = rhs._save_path;
+    _allowed_methods = rhs._allowed_methods;
+    return *this;
+}
+
+bool Route::isAutoindexOn() { return _autoindexOn; }
+

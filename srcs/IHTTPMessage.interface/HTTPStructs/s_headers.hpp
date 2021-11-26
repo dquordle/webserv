@@ -7,22 +7,14 @@
 
 struct s_headers {
 
-//    public:
+
         std::map<std::string, std::string>	headers;
-//    private:
+
 	    size_t colon;
 	    std::string fieldName;
 	    std::string fieldValue;
 
 
-//	s_headers(const s_headers &other) {
-////		*this = other;
-//        headers = other.headers;
-//	}
-
-//	s_headers() {};
-
-//public:
 	s_headers &operator=(const s_headers &other) {
         if (this == &other)
             return *this;
@@ -69,25 +61,21 @@ struct s_headers {
 	    return std::string();
 	}
 
-	const std::string getReferer(std::string target) {
-	    std::map<std::string, std::string>::const_iterator it;
-	    std::map<std::string, std::string>::const_iterator delimetr;
-	    std::string ref;
+    const std::string getReferer(std::string target) {
+        std::map<std::string, std::string>::const_iterator it;
+        std::map<std::string, std::string>::const_iterator delimetr;
+        std::string ref;
 
-	    size_t pos;
-
-	    it = headers.find("Referer");
-	    delimetr = headers.find("Host");
-	    if (it != headers.end()) {
-	        pos = it->second.find(delimetr->second) + 1;
-	        ref = (*it).second;
-	        ref.erase(0, 7);
-            ref.erase(0, pos + delimetr->second.length());
+        it = headers.find("Referer");
+        delimetr = headers.find("Host");
+        if (it != headers.end()) {
+            ref = (*it).second;
+            ref.erase(0, 7  + delimetr->second.length());
             if (ref == "/" || ref.find(target) != std::string::npos || target.find(ref) != std::string::npos)
                 ref = "";
-	    }
+        }
         return ref;
-	}
+    }
 
     const std::string getHeaders() const {
         std::map<std::string, std::string>::const_iterator it = headers.begin();
@@ -104,7 +92,7 @@ struct s_headers {
     }
 
     int checkHeaderField(const std::string & field) {
-	    if (field.find(' ') == 0) // whitespace-preceded line rfc7230 (3) postman даже не пытается их отправить
+	    if (field.find(' ') == 0)
 	        return 400;
 	    colon = field.find(':');
 	    if (!isColonCorrect(field))
@@ -112,7 +100,7 @@ struct s_headers {
 
 	    setFieldName(field);
 	    setFieldValue(field);
-	    if (fieldName.compare(0, 14, "Content-Length") == 0 && !isContentLengthValid()) // TODO для повторяющихся значений?
+	    if (fieldName.compare(0, 14, "Content-Length") == 0 && !isContentLengthValid())
 	        return 400;
         return 200;
 	}

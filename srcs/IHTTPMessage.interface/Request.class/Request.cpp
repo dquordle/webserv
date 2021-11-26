@@ -24,10 +24,10 @@ const s_bodies &Request::getBodies() const {
 }
 
 void Request::makeStartline() {
-//    size_t begin = 0;
-//    if (_request.compare(0, 2, "\r\n") == 0)
-//        begin = 2;
-//    std::string	startline = _request.substr(begin, _request.find('\r'));
+
+
+
+
 
 	std::string	startline = _request.substr(0, _request.find('\r'));
 
@@ -93,7 +93,7 @@ void Request::makeHeaders() {
     }
     if (!_s_headers.isHostProvided() || _s_headers.isBothContLenAndTransfEncod())
         _statusCode = 400;
-//    _s_headers.print();
+
 }
 
 void Request::makeBodies()  {
@@ -101,11 +101,11 @@ void Request::makeBodies()  {
 		return;
 
 	std::string bodyBegin = _request.substr(_request.find("\r\n\r\n") + 4);
-	//	TODO: isBodyLimit - проверить что не был ограничен размер на максимальный размер запроса, если размер тела превышает его то - HTTP 413 (Request Entity Too Large Error)
+
     std::vector<std::string> vSplit = splitVector(bodyBegin);
 
     _s_bodies.bodies = vSplit;
-    if (this->_s_bodies.bodies.empty()) ///wat?
+    if (this->_s_bodies.bodies.empty())
 		this->_s_bodies.bodies.clear();
 }
 

@@ -26,7 +26,6 @@ class CGI {
         void setEnv();
         void unsetEnv();
         std::string	getEnvName(std::string headerName);
-//        void fillHeadersVector();
 };
 
 #endif
