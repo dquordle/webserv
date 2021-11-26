@@ -93,13 +93,13 @@ Route * Server::chooseRoute(const std::string & target) {
 
 	for(; it != ite; it++)
 	{
-		if (it->isCGI())
-		{
-			std::string cgiExt = it->getCGIExt();
-			if (target.find(cgiExt) == target.length() - cgiExt.length())
-				return new Route(*it);
-		}
-
+	    if (it->isCGI())
+	    {
+	        std::string cgiExt = it->getCGIExt();
+	        if (target.find(cgiExt) == target.length() - cgiExt.length())
+	            return new Route(*it);
+	    }
+	}
 	int maxdepth = -1;
 	int currentdepth = -1;
 	Route *ref = &(*it);

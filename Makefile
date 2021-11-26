@@ -1,7 +1,7 @@
 NAME = $(WEBSERV_DIR)webserv
 
 CXX= clang++
-CPPFLAGS= -g -Wall -Wextra -Werror
+CPPFLAGS= -g -Wall -Wextra -Werror -std=c++98
 
 RM = rm -rf
 
